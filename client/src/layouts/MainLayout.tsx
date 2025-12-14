@@ -23,7 +23,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       {/* Sidebar */}
       <div className="fixed inset-y-0 left-0 w-64 bg-gray-800 text-white">
         <div className="flex items-center justify-center h-16 bg-gray-900">
-          <h1 className="text-xl font-bold">POS System</h1>
+          <h1 className="text-xl font-bold">FiLSync</h1>
         </div>
         <nav className="mt-8">
           {navigation.map((item) => {

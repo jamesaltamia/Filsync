@@ -222,9 +222,17 @@ export const SalesPage: React.FC = () => {
               className="bg-white rounded-lg shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => addToCart(product)}
             >
-              <div className="aspect-square bg-gray-200 rounded-lg mb-2 flex items-center justify-center">
+              <div className="aspect-square bg-gray-200 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
                 {product.image ? (
-                  <img src={product.image} alt={product.name} className="w-full h-full object-cover rounded-lg" />
+                  <img 
+                    src={product.image.startsWith('http') ? product.image : `http://localhost:8000${product.image}`} 
+                    alt={product.name} 
+                    className="w-full h-full object-cover rounded-lg" 
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                      (e.target as HTMLImageElement).parentElement!.innerHTML = '<span class="text-4xl">📦</span>';
+                    }}
+                  />
                 ) : (
                   <span className="text-4xl">📦</span>
                 )}
@@ -319,7 +327,7 @@ export const SalesPage: React.FC = () => {
           isLoading={loading}
           disabled={cart.length === 0}
         >
-          🛒 Make Order
+          🛒 Complete Order
         </Button>
       </div>
 

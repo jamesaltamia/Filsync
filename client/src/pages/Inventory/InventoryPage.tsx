@@ -29,6 +29,8 @@ export const InventoryPage: React.FC = () => {
     sku: '',
     is_active: true,
   });
+  const [productImage, setProductImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -78,27 +80,31 @@ export const InventoryPage: React.FC = () => {
     
     setLoading(true);
     try {
+      const formData = new FormData();
+      formData.append('name', productForm.name);
+      formData.append('description', productForm.description || '');
+      formData.append('category_id', String(productForm.category_id));
+      formData.append('price', String(productForm.price));
+      formData.append('stock', String(productForm.stock));
+      formData.append('low_stock_threshold', String(productForm.low_stock_threshold));
+      formData.append('sku', productForm.sku || '');
+      formData.append('is_active', productForm.is_active ? '1' : '0');
+      
+      if (productImage) {
+        formData.append('image', productImage);
+      }
+
       if (isEditMode && selectedProduct) {
-        await inventoryService.updateProduct(selectedProduct.id, {
-          ...productForm,
-          category_id: Number(productForm.category_id),
-          price: Number(productForm.price),
-          stock: Number(productForm.stock),
-          low_stock_threshold: Number(productForm.low_stock_threshold),
-        });
+        await inventoryService.updateProduct(selectedProduct.id, formData);
       } else {
-        await inventoryService.createProduct({
-          ...productForm,
-          category_id: Number(productForm.category_id),
-          price: Number(productForm.price),
-          stock: Number(productForm.stock),
-          low_stock_threshold: Number(productForm.low_stock_threshold),
-        });
+        await inventoryService.createProduct(formData);
       }
       setShowProductModal(false);
       resetForm();
       setIsEditMode(false);
       setSelectedProduct(null);
+      setProductImage(null);
+      setImagePreview(null);
       fetchProducts();
       fetchLowStock();
     } catch (error: any) {
@@ -123,6 +129,8 @@ export const InventoryPage: React.FC = () => {
       sku: product.sku || '',
       is_active: product.is_active,
     });
+    setImagePreview(product.image || null);
+    setProductImage(null);
     setIsEditMode(true);
     setShowProductModal(true);
   };
@@ -180,8 +188,22 @@ export const InventoryPage: React.FC = () => {
       sku: '',
       is_active: true,
     });
+    setProductImage(null);
+    setImagePreview(null);
     setIsEditMode(false);
     setSelectedProduct(null);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProductImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -363,6 +385,26 @@ export const InventoryPage: React.FC = () => {
             value={productForm.sku}
             onChange={(e) => setProductForm({ ...productForm, sku: e.target.value })}
           />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Product Image (Optional)
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+            />
+            {imagePreview && (
+              <div className="mt-2">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-32 h-32 object-cover rounded-lg border border-gray-300"
+                />
+              </div>
+            )}
+          </div>
           <div className="flex justify-end space-x-2">
             <Button
               variant="outline"

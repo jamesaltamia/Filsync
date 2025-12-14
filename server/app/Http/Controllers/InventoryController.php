@@ -44,6 +44,11 @@ class InventoryController extends Controller
 
     public function store(Request $request)
     {
+        // Convert is_active string to boolean before validation
+        if ($request->has('is_active')) {
+            $request->merge(['is_active' => filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -51,10 +56,15 @@ class InventoryController extends Controller
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'low_stock_threshold' => 'required|integer|min:0',
-            'image' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'sku' => 'nullable|string|unique:products,sku',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
         ]);
+
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('products', 'public');
+            $validated['image'] = '/storage/' . $imagePath;
+        }
 
         $product = Product::create($validated);
         return response()->json($product->load('category'), 201);
@@ -70,6 +80,11 @@ class InventoryController extends Controller
     {
         $product = Product::findOrFail($id);
 
+        // Convert is_active string to boolean before validation
+        if ($request->has('is_active')) {
+            $request->merge(['is_active' => filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $product->is_active]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -77,10 +92,19 @@ class InventoryController extends Controller
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'low_stock_threshold' => 'required|integer|min:0',
-            'image' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'sku' => 'nullable|string|unique:products,sku,' . $id,
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
         ]);
+
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($product->image && file_exists(public_path($product->image))) {
+                unlink(public_path($product->image));
+            }
+            $imagePath = $request->file('image')->store('products', 'public');
+            $validated['image'] = '/storage/' . $imagePath;
+        }
 
         $product->update($validated);
         return response()->json($product->load('category'));

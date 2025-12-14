@@ -17,13 +17,19 @@ export const inventoryService = {
     return response.data;
   },
 
-  createProduct: async (data: Partial<Product>) => {
-    const response = await api.post('/inventory', data);
+  createProduct: async (data: Partial<Product> | FormData) => {
+    const config = data instanceof FormData 
+      ? {} // Let browser set Content-Type with boundary for FormData
+      : { headers: { 'Content-Type': 'application/json' } };
+    const response = await api.post('/inventory', data, config);
     return response.data;
   },
 
-  updateProduct: async (id: number, data: Partial<Product>) => {
-    const response = await api.put(`/inventory/${id}`, data);
+  updateProduct: async (id: number, data: Partial<Product> | FormData) => {
+    const config = data instanceof FormData 
+      ? {} // Let browser set Content-Type with boundary for FormData
+      : { headers: { 'Content-Type': 'application/json' } };
+    const response = await api.post(`/inventory/${id}?_method=PUT`, data, config);
     return response.data;
   },
 
