@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
@@ -11,8 +12,17 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StockController;
 use Illuminate\Support\Facades\Route;
 
-// Dashboard
-Route::get('/dashboard', [DashboardController::class, 'index']);
+// Public routes (no authentication required)
+Route::post('/login', [AuthController::class, 'login']);
+
+// Protected routes (authentication required)
+Route::middleware('auth:sanctum')->group(function () {
+    // Auth
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
+
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index']);
 
 // Categories
 Route::apiResource('categories', CategoryController::class);
@@ -43,8 +53,8 @@ Route::get('/reports/monthly', [ReportController::class, 'monthly']);
 Route::get('/reports/yearly', [ReportController::class, 'yearly']);
 Route::get('/reports/item-sales', [ReportController::class, 'itemSales']);
 
-// Settings
-Route::get('/settings/{key}/value', [SettingsController::class, 'getValue']);
-Route::put('/settings/{key}/value', [SettingsController::class, 'setValue']);
-Route::apiResource('settings', SettingsController::class);
-
+    // Settings
+    Route::get('/settings/{key}/value', [SettingsController::class, 'getValue']);
+    Route::put('/settings/{key}/value', [SettingsController::class, 'setValue']);
+    Route::apiResource('settings', SettingsController::class);
+});

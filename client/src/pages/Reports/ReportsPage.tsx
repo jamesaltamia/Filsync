@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { reportService } from '../../services/reportService';
 import type { DailySales, ItemSales } from '../../types/report';
 import { formatCurrency } from '../../utils/formatCurrency';
@@ -13,6 +13,7 @@ export const ReportsPage: React.FC = () => {
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [loading, setLoading] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
 
   const fetchDailyReport = async () => {
     setLoading(true);
@@ -74,12 +75,72 @@ export const ReportsPage: React.FC = () => {
     }
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleExportCSV = () => {
+    let csvContent = '';
+    let filename = '';
+
+    if (reportType === 'items' && itemSales.length > 0) {
+      // Export Item Sales
+      csvContent = 'Product,Category,Quantity Sold,Revenue\n';
+      itemSales.forEach((item) => {
+        csvContent += `"${item.product.name}","${item.product.category?.name || 'N/A'}",${item.total_quantity},${item.total_revenue}\n`;
+      });
+      filename = 'item-sales-report.csv';
+    } else if (dailyData) {
+      // Export Summary
+      const reportPeriod = reportType === 'daily' ? date : 
+                          reportType === 'monthly' ? `${year}-${String(month).padStart(2, '0')}` : 
+                          `${year}`;
+      csvContent = `${reportType.toUpperCase()} SALES REPORT - ${reportPeriod}\n\n`;
+      csvContent += 'Metric,Value\n';
+      csvContent += `Total Orders,${dailyData.total_orders || 0}\n`;
+      csvContent += `Total Revenue,${dailyData.total_revenue || 0}\n`;
+      csvContent += `Subtotal,${dailyData.total_subtotal || 0}\n`;
+      csvContent += `Tax,${dailyData.total_tax || 0}\n`;
+      filename = `${reportType}-sales-report-${reportPeriod}.csv`;
+    }
+
+    // Create and download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const getReportTitle = () => {
+    if (reportType === 'daily') return `Daily Sales Report - ${date}`;
+    if (reportType === 'monthly') return `Monthly Sales Report - ${new Date(year, month - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}`;
+    if (reportType === 'yearly') return `Yearly Sales Report - ${year}`;
+    return 'Item Sales Report';
+  };
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Reports</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Reports</h1>
+        {(dailyData || itemSales.length > 0) && (
+          <div className="flex space-x-2 print:hidden">
+            <Button onClick={handlePrint} variant="outline">
+              🖨️ Print Report
+            </Button>
+            <Button onClick={handleExportCSV} variant="outline">
+              📊 Export CSV
+            </Button>
+          </div>
+        )}
+      </div>
 
       {/* Report Type Selection */}
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-white rounded-lg shadow-md p-6 print:hidden">
         <div className="flex space-x-4 mb-4">
           <button
             onClick={() => setReportType('daily')}
@@ -162,55 +223,113 @@ export const ReportsPage: React.FC = () => {
 
       {/* Report Results */}
       {dailyData && reportType !== 'items' && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <p className="text-gray-600 text-sm">Total Orders</p>
-            <p className="text-2xl font-bold">{dailyData.total_orders || 0}</p>
-          </Card>
-          <Card>
-            <p className="text-gray-600 text-sm">Total Revenue</p>
-            <p className="text-2xl font-bold text-green-600">
-              {formatCurrency(dailyData.total_revenue || 0)}
-            </p>
-          </Card>
-          <Card>
-            <p className="text-gray-600 text-sm">Subtotal</p>
-            <p className="text-2xl font-bold">{formatCurrency(dailyData.total_subtotal || 0)}</p>
-          </Card>
-          <Card>
-            <p className="text-gray-600 text-sm">Tax</p>
-            <p className="text-2xl font-bold">{formatCurrency(dailyData.total_tax || 0)}</p>
+        <div ref={printRef}>
+          {/* Print Header */}
+          <div className="hidden print:block mb-6 text-center">
+            <h1 className="text-3xl font-bold mb-2">FilSync POS</h1>
+            <h2 className="text-xl font-semibold mb-2">{getReportTitle()}</h2>
+            <p className="text-gray-600">Generated on {new Date().toLocaleString()}</p>
+            <hr className="my-4" />
+          </div>
+
+          {/* Summary Cards */}
+          <Card title="Sales Summary">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <p className="text-gray-700 text-sm font-medium mb-1">Total Orders</p>
+                <p className="text-3xl font-bold text-blue-600">{dailyData.total_orders || 0}</p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <p className="text-gray-700 text-sm font-medium mb-1">Total Revenue</p>
+                <p className="text-3xl font-bold text-green-600">
+                  {formatCurrency(dailyData.total_revenue || 0)}
+                </p>
+              </div>
+              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <p className="text-gray-700 text-sm font-medium mb-1">Subtotal</p>
+                <p className="text-3xl font-bold text-purple-600">
+                  {formatCurrency(dailyData.total_subtotal || 0)}
+                </p>
+              </div>
+              <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                <p className="text-gray-700 text-sm font-medium mb-1">Tax Amount</p>
+                <p className="text-3xl font-bold text-orange-600">
+                  {formatCurrency(dailyData.total_tax || 0)}
+                </p>
+              </div>
+            </div>
           </Card>
         </div>
       )}
 
       {reportType === 'items' && itemSales.length > 0 && (
-        <Card title="Item Sales Report">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity Sold</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {itemSales.map((item, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap">{item.product.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{item.product.category?.name || 'N/A'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{item.total_quantity}</td>
-                    <td className="px-6 py-4 whitespace-nowrap font-medium">
-                      {formatCurrency(item.total_revenue)}
+        <div ref={printRef}>
+          {/* Print Header */}
+          <div className="hidden print:block mb-6 text-center">
+            <h1 className="text-3xl font-bold mb-2">FilSync POS</h1>
+            <h2 className="text-xl font-semibold mb-2">{getReportTitle()}</h2>
+            <p className="text-gray-600">Generated on {new Date().toLocaleString()}</p>
+            <hr className="my-4" />
+          </div>
+
+          {/* Summary Statistics */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <Card>
+              <p className="text-gray-600 text-sm font-medium">Total Products</p>
+              <p className="text-2xl font-bold text-blue-600">{itemSales.length}</p>
+            </Card>
+            <Card>
+              <p className="text-gray-600 text-sm font-medium">Total Quantity Sold</p>
+              <p className="text-2xl font-bold text-purple-600">
+                {itemSales.reduce((sum, item) => sum + Number(item.total_quantity || 0), 0)}
+              </p>
+            </Card>
+            <Card>
+              <p className="text-gray-600 text-sm font-medium">Total Revenue</p>
+              <p className="text-2xl font-bold text-green-600">
+                {formatCurrency(itemSales.reduce((sum, item) => sum + Number(item.total_revenue || 0), 0))}
+              </p>
+            </Card>
+          </div>
+
+          <Card title="Item Sales Report">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity Sold</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {itemSales.map((item, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
+                      <td className="px-6 py-4 whitespace-nowrap font-medium">{item.product.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{item.product.category?.name || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">{item.total_quantity}</td>
+                      <td className="px-6 py-4 whitespace-nowrap font-semibold text-green-600">
+                        {formatCurrency(item.total_revenue)}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="bg-gray-100 font-bold">
+                    <td colSpan={3} className="px-6 py-4 text-right">TOTAL:</td>
+                    <td className="px-6 py-4 text-center">
+                      {itemSales.reduce((sum, item) => sum + Number(item.total_quantity || 0), 0)}
+                    </td>
+                    <td className="px-6 py-4 text-green-600">
+                      {formatCurrency(itemSales.reduce((sum, item) => sum + Number(item.total_revenue || 0), 0))}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
       )}
     </div>
   );

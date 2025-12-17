@@ -1,39 +1,65 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 interface MainLayoutProps {
   children: React.ReactNode;
 }
 
-const navigation = [
-  { name: 'Dashboard', path: '/', icon: '📊' },
-  { name: 'Inventory', path: '/inventory', icon: '📦' },
-  { name: 'Sales', path: '/sales', icon: '🛒' },
-  { name: 'Orders History', path: '/orders', icon: '📋' },
-  { name: 'Customers', path: '/customers', icon: '👥' },
-  { name: 'Reports', path: '/reports', icon: '📈' },
-  { name: 'Settings', path: '/settings', icon: '⚙️' },
-];
-
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  // Define navigation items with role restrictions
+  const allNavigationItems = [
+    { name: 'Dashboard', path: '/', icon: '📊', roles: ['admin', 'cashier'] },
+    { name: 'Inventory', path: '/inventory', icon: '📦', roles: ['admin'] },
+    { name: 'Sales', path: '/sales', icon: '🛒', roles: ['admin', 'cashier'] },
+    { name: 'Orders History', path: '/orders', icon: '📋', roles: ['admin', 'cashier'] },
+    { name: 'Customers', path: '/customers', icon: '👥', roles: ['admin'] },
+    { name: 'Reports', path: '/reports', icon: '📈', roles: ['admin', 'cashier'] },
+    { name: 'Settings', path: '/settings', icon: '⚙️', roles: ['admin'] },
+  ];
+
+  // Filter navigation based on user role
+  const navigation = allNavigationItems.filter((item) =>
+    item.roles.includes(user?.role || 'cashier')
+  );
 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 w-64 bg-gray-800 text-white">
-        <div className="flex items-center justify-center h-16 bg-gray-900">
-          <h1 className="text-xl font-bold">FiLSync</h1>
+      <div className="fixed inset-y-0 left-0 w-64 bg-blue-800 text-white flex flex-col">
+        <div className="flex items-center justify-center h-16 bg-blue-900">
+          <h1 className="text-xl font-bold">FilSync POS</h1>
         </div>
-        <nav className="mt-8">
+        
+        {/* User Info */}
+        <div className="px-4 py-3 bg-blue-900 border-b border-white-700">
+          <p className="text-sm font-semibold text-white">{user?.name}</p>
+          <p className="text-xs text-gray-400">{user?.email}</p>
+          <span className={`inline-block mt-2 px-2 py-1 text-xs font-semibold rounded ${
+            user?.role === 'admin' ? 'bg-purple-600 text-white' : 'bg-green-600 text-white'
+          }`}>
+            {user?.role?.toUpperCase()}
+          </span>
+        </div>
+
+        <nav className="mt-4 flex-1">
           {navigation.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 ${
-                  isActive ? 'bg-gray-700 border-r-4 border-green-500' : ''
+                className={`flex items-center px-6 py-3 text-gray-300 hover:bg-blue-700 transition-colors ${
+                  isActive ? 'bg-blue-700 border-r-4 border-green-500' : ''
                 }`}
               >
                 <span className="mr-3">{item.icon}</span>
@@ -42,6 +68,16 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             );
           })}
         </nav>
+
+        {/* Logout Button */}
+        <div className="p-4 border-t border-gray-700">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center px-4 py-2 bg-red-500 hover:bg-red-700 text-white rounded transition-colors"
+          >
+            <span>Logout</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Content */}
@@ -66,4 +102,3 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     </div>
   );
 };
-
