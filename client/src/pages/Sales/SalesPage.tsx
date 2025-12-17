@@ -71,14 +71,15 @@ export const SalesPage: React.FC = () => {
       }
       updateCartQuantity(existingItem.product_id, existingItem.quantity + 1);
     } else {
+      const price = Number(product.price);
       const newItem: CartItem = {
         id: Date.now(),
         order_id: 0,
         product_id: product.id,
         product,
         quantity: 1,
-        price: product.price,
-        subtotal: product.price,
+        price: price,
+        subtotal: price,
         created_at: '',
         updated_at: '',
       };
@@ -106,7 +107,7 @@ export const SalesPage: React.FC = () => {
           ? {
               ...item,
               quantity,
-              subtotal: item.price * quantity,
+              subtotal: Number(item.price) * quantity,
             }
           : item
       )
@@ -131,7 +132,10 @@ export const SalesPage: React.FC = () => {
   };
 
   const calculateTotals = () => {
-    const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
+    const subtotal = cart.reduce((sum, item) => {
+      const itemSubtotal = Number(item.subtotal) || 0;
+      return sum + itemSubtotal;
+    }, 0);
     const total = subtotal;
     return { subtotal, total };
   };

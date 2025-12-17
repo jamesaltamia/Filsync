@@ -201,7 +201,7 @@ export const CustomersPage: React.FC = () => {
       >
         <div className="space-y-4">
           <Input
-            label="Student ID (Optional)"
+            label="Student ID"
             value={customerForm.student_id}
             onChange={(e) => setCustomerForm({ ...customerForm, student_id: e.target.value })}
           />
@@ -218,14 +218,9 @@ export const CustomersPage: React.FC = () => {
             required
           />
           <Input
-            label="Course (Optional)"
+            label="Course"
             value={customerForm.course}
             onChange={(e) => setCustomerForm({ ...customerForm, course: e.target.value })}
-          />
-          <Input
-            label="Phone (Optional)"
-            value={customerForm.phone}
-            onChange={(e) => setCustomerForm({ ...customerForm, phone: e.target.value })}
           />
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>

@@ -21,6 +21,7 @@ export const InventoryPage: React.FC = () => {
 
   const [productForm, setProductForm] = useState({
     name: '',
+    size: '',
     description: '',
     category_id: '',
     price: '',
@@ -82,6 +83,9 @@ export const InventoryPage: React.FC = () => {
     try {
       const formData = new FormData();
       formData.append('name', productForm.name);
+      if (productForm.size) {
+        formData.append('size', productForm.size);
+      }
       formData.append('description', productForm.description || '');
       formData.append('category_id', String(productForm.category_id));
       formData.append('price', String(productForm.price));
@@ -121,6 +125,7 @@ export const InventoryPage: React.FC = () => {
     setSelectedProduct(product);
     setProductForm({
       name: product.name,
+      size: product.size || '',
       description: product.description || '',
       category_id: String(product.category_id),
       price: String(product.price),
@@ -180,6 +185,7 @@ export const InventoryPage: React.FC = () => {
   const resetForm = () => {
     setProductForm({
       name: '',
+      size: '',
       description: '',
       category_id: '',
       price: '',
@@ -278,7 +284,10 @@ export const InventoryPage: React.FC = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {products.map((product) => (
               <tr key={product.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {product.name}
+                  {product.size && <span className="text-gray-500 ml-2">({product.size})</span>}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">{product.category?.name || 'N/A'}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{formatCurrency(product.price)}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -358,7 +367,9 @@ export const InventoryPage: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
             <select
               value={productForm.category_id}
-              onChange={(e) => setProductForm({ ...productForm, category_id: e.target.value })}
+              onChange={(e) => {
+                setProductForm({ ...productForm, category_id: e.target.value, size: '' });
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg"
               required
             >
@@ -370,6 +381,23 @@ export const InventoryPage: React.FC = () => {
               ))}
             </select>
           </div>
+          {productForm.category_id && categories.find(cat => cat.id === Number(productForm.category_id))?.name === 'Uniforms' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
+              <select
+                value={productForm.size}
+                onChange={(e) => setProductForm({ ...productForm, size: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              >
+                <option value="">Select Size</option>
+                <option value="Small">Small</option>
+                <option value="Medium">Medium</option>
+                <option value="Large">Large</option>
+                <option value="XL">XL</option>
+                <option value="XXL">XXL</option>
+              </select>
+            </div>
+          )}
           <Input
             label="Price"
             type="number"

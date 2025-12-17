@@ -4,6 +4,21 @@ import { formatCurrency } from '../../utils/formatCurrency';
 import api from '../../services/api';
 import type { Product } from '../../types/product';
 import { Link } from 'react-router-dom';
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 
 interface DashboardData {
   today_sales: {
@@ -12,7 +27,22 @@ interface DashboardData {
   };
   low_stock_alerts: Product[];
   recent_orders: any[];
+  monthly_revenue_cost: Array<{
+    month: string;
+    revenue: number;
+    cost: number;
+  }>;
+  sales_by_category: Array<{
+    category: string;
+    total: number;
+  }>;
+  customer_type_distribution: Array<{
+    name: string;
+    value: number;
+  }>;
 }
+
+const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 export const DashboardPage: React.FC = () => {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -104,6 +134,80 @@ export const DashboardPage: React.FC = () => {
           </div>
         </Card>
       )}
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Monthly Revenue & Cost - Line Chart */}
+        <Card title="Monthly Revenue & Cost">
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={data?.monthly_revenue_cost || []}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip
+                formatter={(value: number) => formatCurrency(value)}
+                contentStyle={{ backgroundColor: 'white', border: '1px solid #ccc' }}
+              />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="revenue"
+                stroke="#3B82F6"
+                strokeWidth={2}
+                name="Revenue"
+              />
+              <Line
+                type="monotone"
+                dataKey="cost"
+                stroke="#EF4444"
+                strokeWidth={2}
+                name="Cost"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </Card>
+
+        {/* Sales by Category - Bar Chart */}
+        <Card title="Sales by Category">
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data?.sales_by_category || []}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="category" />
+              <YAxis />
+              <Tooltip
+                formatter={(value: number) => formatCurrency(value)}
+                contentStyle={{ backgroundColor: 'white', border: '1px solid #ccc' }}
+              />
+              <Legend />
+              <Bar dataKey="total" fill="#10B981" name="Total Sales" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+      </div>
+
+      {/* Customer Type Distribution - Pie Chart */}
+      <Card title="Customer Type Distribution">
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie
+              data={data?.customer_type_distribution || []}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+              outerRadius={100}
+              fill="#8884d8"
+              dataKey="value"
+            >
+              {data?.customer_type_distribution.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
+      </Card>
 
       {/* Recent Orders */}
       <Card title="Recent Orders">
