@@ -38,6 +38,12 @@ class SalesService
             $taxAmount = ($subtotal * $taxRate) / 100;
             $total = $subtotal + $taxAmount;
 
+            // Determine payment method and status
+            $paymentMethod = $data['payment_method'] ?? 'cash';
+
+            // Credit sales are initially unpaid (pending), cash sales are completed
+            $status = $paymentMethod === 'credit' ? 'pending' : 'completed';
+
             // Create order
             $order = Order::create([
                 'customer_id' => $data['customer_id'] ?? null,
@@ -45,8 +51,8 @@ class SalesService
                 'tax_rate' => $taxRate,
                 'tax_amount' => $taxAmount,
                 'total' => $total,
-                'payment_method' => 'cash',
-                'status' => 'completed',
+                'payment_method' => $paymentMethod,
+                'status' => $status,
             ]);
 
             // Create order items and update stock

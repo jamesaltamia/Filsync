@@ -1,14 +1,16 @@
 import React, { useState, useRef } from 'react';
 import { reportService } from '../../services/reportService';
-import type { DailySales, ItemSales } from '../../types/report';
+import type { DailySales, ItemSales, CreditSale } from '../../types/report';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
+import { orderService } from '../../services/orderService';
 
 export const ReportsPage: React.FC = () => {
-  const [reportType, setReportType] = useState<'daily' | 'monthly' | 'yearly' | 'items'>('daily');
+  const [reportType, setReportType] = useState<'daily' | 'monthly' | 'yearly' | 'items' | 'credit'>('daily');
   const [dailyData, setDailyData] = useState<DailySales | null>(null);
   const [itemSales, setItemSales] = useState<ItemSales[]>([]);
+  const [creditSales, setCreditSales] = useState<CreditSale[]>([]);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
@@ -63,6 +65,18 @@ export const ReportsPage: React.FC = () => {
     }
   };
 
+  const fetchCreditSales = async () => {
+    setLoading(true);
+    try {
+      const data = await reportService.getCreditSales();
+      setCreditSales(data);
+    } catch (error) {
+      console.error('Error fetching credit sales:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGenerateReport = () => {
     if (reportType === 'daily') {
       fetchDailyReport();
@@ -70,8 +84,10 @@ export const ReportsPage: React.FC = () => {
       fetchMonthlyReport();
     } else if (reportType === 'yearly') {
       fetchYearlyReport();
-    } else {
+    } else if (reportType === 'items') {
       fetchItemSales();
+    } else {
+      fetchCreditSales();
     }
   };
 
@@ -120,7 +136,8 @@ export const ReportsPage: React.FC = () => {
     if (reportType === 'daily') return `Daily Sales Report - ${date}`;
     if (reportType === 'monthly') return `Monthly Sales Report - ${new Date(year, month - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}`;
     if (reportType === 'yearly') return `Yearly Sales Report - ${year}`;
-    return 'Item Sales Report';
+    if (reportType === 'items') return 'Item Sales Report';
+    return 'Credit Sales Report (Teachers)';
   };
 
   return (
@@ -174,6 +191,14 @@ export const ReportsPage: React.FC = () => {
           >
             Item Sales
           </button>
+          <button
+            onClick={() => setReportType('credit')}
+            className={`px-4 py-2 rounded-lg ${
+              reportType === 'credit' ? 'bg-green-600 text-white' : 'bg-gray-200'
+            }`}
+          >
+            Credit Sales (Teachers)
+          </button>
         </div>
 
         {/* Date/Year Selection */}
@@ -222,7 +247,7 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* Report Results */}
-      {dailyData && reportType !== 'items' && (
+      {dailyData && reportType !== 'items' && reportType !== 'credit' && (
         <div ref={printRef}>
           {/* Print Header */}
           <div className="hidden print:block mb-6 text-center">
@@ -325,6 +350,137 @@ export const ReportsPage: React.FC = () => {
                       {formatCurrency(itemSales.reduce((sum, item) => sum + Number(item.total_revenue || 0), 0))}
                     </td>
                   </tr>
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Credit Sales Report */}
+      {reportType === 'credit' && (
+        <div ref={printRef}>
+          {/* Print Header */}
+          <div className="hidden print:block mb-6 text-center">
+            <h1 className="text-3xl font-bold mb-2">FilSync POS</h1>
+            <h2 className="text-xl font-semibold mb-2">{getReportTitle()}</h2>
+            <p className="text-gray-600">Generated on {new Date().toLocaleString()}</p>
+            <hr className="my-4" />
+          </div>
+
+          <Card title="Credit Sales Summary (Teachers)">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Total Credit Orders</p>
+                <p className="text-2xl font-bold text-blue-600">{creditSales.length}</p>
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Outstanding Credit</p>
+                <p className="text-2xl font-bold text-red-600">
+                  {formatCurrency(
+                    creditSales
+                      .filter((c) => c.status === 'Unpaid')
+                      .reduce((sum, c) => sum + Number(c.total || 0), 0)
+                  )}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Paid Credit Revenue</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {formatCurrency(
+                    creditSales
+                      .filter((c) => c.status === 'Paid')
+                      .reduce((sum, c) => sum + Number(c.total || 0), 0)
+                  )}
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card title="Credit Sales (Teachers)">
+            <div className="overflow-x-auto mt-4">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Order ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Teacher
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Total Amount
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {creditSales.map((sale) => (
+                    <tr key={sale.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">{sale.order_number}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{sale.teacher_name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{sale.date}</td>
+                      <td className="px-6 py-4 whitespace-nowrap font-semibold">
+                        {formatCurrency(sale.total)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            sale.status === 'Paid'
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-yellow-100 text-yellow-700'
+                          }`}
+                        >
+                          {sale.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {sale.status === 'Unpaid' ? (
+                          <button
+                            type="button"
+                            className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                            onClick={async () => {
+                              if (
+                                !confirm(
+                                  `Mark order ${sale.order_number} as paid?`
+                                )
+                              ) {
+                                return;
+                              }
+                              try {
+                                await orderService.markAsPaid(sale.id);
+                                // Refresh credit sales list
+                                fetchCreditSales();
+                              } catch (error) {
+                                // eslint-disable-next-line no-console
+                                console.error('Error marking order as paid:', error);
+                                alert('Failed to mark order as paid. Please try again.');
+                              }
+                            }}
+                          >
+                            Mark as Paid
+                          </button>
+                        ) : (
+                          <span className="text-xs text-gray-400">Paid</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {creditSales.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                        No credit sales found.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

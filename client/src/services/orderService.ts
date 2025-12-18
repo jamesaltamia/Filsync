@@ -17,5 +17,10 @@ export const orderService = {
     const response = await api.get(`/orders/${id}`);
     return response.data;
   },
+
+  markAsPaid: async (id: number) => {
+    const response = await api.put(`/orders/${id}/mark-paid`);
+    return response.data;
+  },
 };
 

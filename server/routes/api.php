@@ -41,6 +41,7 @@ Route::post('/sales', [SalesController::class, 'store']);
 // Orders History
 Route::get('/orders', [OrderController::class, 'index']);
 Route::get('/orders/{id}', [OrderController::class, 'show']);
+Route::put('/orders/{id}/mark-paid', [OrderController::class, 'markAsPaid']);
 
 // Customers
 Route::get('/customers/search', [CustomerController::class, 'search']);
@@ -52,6 +53,7 @@ Route::get('/reports/daily', [ReportController::class, 'daily']);
 Route::get('/reports/monthly', [ReportController::class, 'monthly']);
 Route::get('/reports/yearly', [ReportController::class, 'yearly']);
 Route::get('/reports/item-sales', [ReportController::class, 'itemSales']);
+Route::get('/reports/credit-sales', [ReportController::class, 'creditSales']);
 
     // Settings
     Route::get('/settings/{key}/value', [SettingsController::class, 'getValue']);

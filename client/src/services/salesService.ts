@@ -18,6 +18,7 @@ export const salesService = {
       quantity: number;
     }>;
     tax_rate?: number;
+    payment_method?: 'cash' | 'credit';
   }) => {
     const response = await api.post('/sales', data);
     return response.data;

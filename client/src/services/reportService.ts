@@ -1,5 +1,5 @@
 import api from './api';
-import type { DailySales, MonthlySales, YearlySales, ItemSales } from '../types/report';
+import type { DailySales, MonthlySales, YearlySales, ItemSales, CreditSale } from '../types/report';
 
 export const reportService = {
   getDailySales: async (date?: string) => {
@@ -21,6 +21,11 @@ export const reportService = {
     const response = await api.get('/reports/item-sales', {
       params: { start_date: startDate, end_date: endDate },
     });
+    return response.data;
+  },
+
+  getCreditSales: async () => {
+    const response = await api.get<CreditSale[]>('/reports/credit-sales');
     return response.data;
   },
 };

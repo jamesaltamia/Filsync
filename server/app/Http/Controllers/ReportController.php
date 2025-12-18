@@ -43,4 +43,10 @@ class ReportController extends Controller
         $sales = $this->reportService->getItemSales($startDate, $endDate);
         return response()->json($sales);
     }
+
+    public function creditSales()
+    {
+        $sales = $this->reportService->getCreditSales();
+        return response()->json($sales);
+    }
 }

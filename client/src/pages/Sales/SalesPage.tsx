@@ -26,6 +26,7 @@ export const SalesPage: React.FC = () => {
   const [customerSearch, setCustomerSearch] = useState('');
   const [customerResults, setCustomerResults] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'credit'>('cash');
 
   useEffect(() => {
     fetchProducts();
@@ -146,6 +147,18 @@ export const SalesPage: React.FC = () => {
       return;
     }
 
+    // Enforce credit rules
+    if (paymentMethod === 'credit') {
+      if (!selectedCustomer) {
+        alert('Credit sales require a selected teacher.');
+        return;
+      }
+      if (selectedCustomer.type !== 'teacher') {
+        alert('Only teachers are allowed to use credit sales.');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const order = await salesService.createOrder({
@@ -155,6 +168,7 @@ export const SalesPage: React.FC = () => {
           quantity: item.quantity,
         })),
         tax_rate: 0,
+        payment_method: paymentMethod,
       });
 
       // Print receipt
@@ -163,6 +177,7 @@ export const SalesPage: React.FC = () => {
       // Clear cart and customer
       setCart([]);
       setSelectedCustomer(null);
+      setPaymentMethod('cash');
 
       alert('Order completed successfully!');
     } catch (error: any) {
@@ -276,6 +291,48 @@ export const SalesPage: React.FC = () => {
             </Button>
           </div>
         </div>
+
+        {/* Payment Method (Teachers Only) */}
+        {selectedCustomer && selectedCustomer.type === 'teacher' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Payment Method
+            </label>
+            <div className="flex space-x-2">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('cash')}
+                className={`flex-1 px-4 py-2 rounded-lg border ${
+                  paymentMethod === 'cash'
+                    ? 'bg-green-600 text-white border-green-600'
+                    : 'bg-white text-gray-700 border-gray-300'
+                }`}
+              >
+                Cash
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('credit')}
+                className={`flex-1 px-4 py-2 rounded-lg border ${
+                  paymentMethod === 'credit'
+                    ? 'bg-yellow-500 text-white border-yellow-500'
+                    : 'bg-white text-gray-700 border-gray-300'
+                }`}
+              >
+                Credit (On Account)
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              Teachers may use credit. Students must pay in cash.
+            </p>
+          </div>
+        )}
+
+        {selectedCustomer && selectedCustomer.type === 'student' && (
+          <p className="text-sm text-gray-600">
+            Payment Method: <span className="font-semibold">Cash only (students must pay immediately)</span>
+          </p>
+        )}
 
         {/* Cart Items */}
         <div className="space-y-2 max-h-64 overflow-y-auto">

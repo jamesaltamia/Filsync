@@ -22,7 +22,7 @@ export type Order = {
   tax_rate: number;
   tax_amount: number;
   total: number;
-  payment_method: 'cash';
+  payment_method: 'cash' | 'credit';
   status: 'pending' | 'completed' | 'cancelled';
   items?: OrderItem[];
   created_at: string;

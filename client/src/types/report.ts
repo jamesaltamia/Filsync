@@ -22,3 +22,12 @@ export interface ItemSales {
   total_revenue: number;
 }
 
+export interface CreditSale {
+  id: number;
+  order_number: string;
+  teacher_name: string;
+  date: string;
+  total: number;
+  status: 'Paid' | 'Unpaid';
+}
+

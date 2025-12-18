@@ -2,6 +2,13 @@ import type { Order } from '../types/order';
 import { formatCurrency } from './formatCurrency';
 
 export const generateReceipt = (order: Order): string => {
+  const paymentLine =
+    order.payment_method === 'credit'
+      ? order.status === 'pending'
+        ? 'ON ACCOUNT (UNPAID)'
+        : 'ON ACCOUNT (PAID)'
+      : order.payment_method.toUpperCase();
+
   const receipt = `
 ================================
         RECEIPT
@@ -17,7 +24,7 @@ ${order.items?.map(item =>
 ).join('\n') || ''}
 --------------------------------
 TOTAL: ${formatCurrency(order.total)}
-Payment: ${order.payment_method.toUpperCase()}
+Payment: ${paymentLine}
 ================================
 Thank you for your purchase!
 ================================

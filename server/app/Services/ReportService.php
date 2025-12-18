@@ -82,5 +82,31 @@ class ReportService
                 ];
             });
     }
+
+    /**
+     * Get credit sales for teachers (both paid and unpaid).
+     */
+    public function getCreditSales()
+    {
+        return Order::with('customer')
+            ->where('payment_method', 'credit')
+            ->whereHas('customer', function ($query) {
+                $query->where('type', 'teacher');
+            })
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($order) {
+                $status = $order->status === 'completed' ? 'Paid' : 'Unpaid';
+
+                return [
+                    'id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'teacher_name' => $order->customer?->full_name ?? ($order->customer ? $order->customer->first_name . ' ' . $order->customer->last_name : 'N/A'),
+                    'date' => $order->created_at->toDateTimeString(),
+                    'total' => (float) $order->total,
+                    'status' => $status,
+                ];
+            });
+    }
 }
 

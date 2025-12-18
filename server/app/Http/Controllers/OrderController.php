@@ -39,4 +39,25 @@ class OrderController extends Controller
         $order = Order::with(['customer', 'items.product.category'])->findOrFail($id);
         return response()->json($order);
     }
+
+    /**
+     * Mark a credit order as paid.
+     */
+    public function markAsPaid(string $id)
+    {
+        $order = Order::where('id', $id)
+            ->where('payment_method', 'credit')
+            ->firstOrFail();
+
+        // Only update if not already completed
+        if ($order->status !== 'completed') {
+            $order->status = 'completed';
+            $order->save();
+        }
+
+        return response()->json([
+            'message' => 'Order marked as paid successfully.',
+            'order' => $order->fresh(),
+        ]);
+    }
 }
