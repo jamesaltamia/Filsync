@@ -19,6 +19,8 @@ export const salesService = {
     }>;
     tax_rate?: number;
     payment_method?: 'cash' | 'credit';
+    cash_tendered?: number;
+    change_due?: number;
   }) => {
     const response = await api.post('/sales', data);
     return response.data;

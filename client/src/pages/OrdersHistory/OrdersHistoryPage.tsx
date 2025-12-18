@@ -39,7 +39,17 @@ export const OrdersHistoryPage: React.FC = () => {
   };
 
   const handlePrintReceipt = (order: Order) => {
-    printReceipt(order);
+    // Ensure cash and change are included on receipt if available
+    const cash =
+      order.cash_tendered != null ? Number(order.cash_tendered) : undefined;
+    const change =
+      order.change_due != null ? Number(order.change_due) : undefined;
+
+    printReceipt({
+      ...order,
+      cash_tendered: cash,
+      change_due: change,
+    });
   };
 
   if (loading) {
@@ -161,10 +171,20 @@ export const OrdersHistoryPage: React.FC = () => {
                 <span>Subtotal:</span>
                 <span>{formatCurrency(selectedOrder.subtotal)}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Tax ({selectedOrder.tax_rate}%):</span>
-                <span>{formatCurrency(selectedOrder.tax_amount)}</span>
-              </div>
+
+              {selectedOrder.cash_tendered != null && (
+                <>
+                  <div className="flex justify-between">
+                    <span>Cash:</span>
+                    <span>{formatCurrency(Number(selectedOrder.cash_tendered))}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Change:</span>
+                    <span>{formatCurrency(Number(selectedOrder.change_due ?? 0))}</span>
+                  </div>
+                </>
+              )}
+
               <div className="flex justify-between font-bold text-lg text-green-600 border-t pt-2">
                 <span>Total:</span>
                 <span>{formatCurrency(selectedOrder.total)}</span>

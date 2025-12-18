@@ -27,6 +27,7 @@ export const SalesPage: React.FC = () => {
   const [customerResults, setCustomerResults] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'credit'>('cash');
+  const [cashTendered, setCashTendered] = useState<string>('');
 
   useEffect(() => {
     fetchProducts();
@@ -159,6 +160,26 @@ export const SalesPage: React.FC = () => {
       }
     }
 
+    // For cash sales, validate cash tendered and compute change
+    let cashValue: number | undefined;
+    let changeValue: number | undefined;
+    if (paymentMethod === 'cash') {
+      if (!cashTendered) {
+        alert('Please enter cash received from customer.');
+        return;
+      }
+      cashValue = Number(cashTendered);
+      if (Number.isNaN(cashValue) || cashValue <= 0) {
+        alert('Please enter a valid cash amount.');
+        return;
+      }
+      if (cashValue < total) {
+        alert('Cash is not enough for the total amount.');
+        return;
+      }
+      changeValue = cashValue - total;
+    }
+
     setLoading(true);
     try {
       const order = await salesService.createOrder({
@@ -169,15 +190,22 @@ export const SalesPage: React.FC = () => {
         })),
         tax_rate: 0,
         payment_method: paymentMethod,
+        cash_tendered: cashValue,
+        change_due: changeValue,
       });
 
       // Print receipt
-      printReceipt(order);
+      printReceipt({
+        ...order,
+        cash_tendered: cashValue,
+        change_due: changeValue,
+      });
 
       // Clear cart and customer
       setCart([]);
       setSelectedCustomer(null);
       setPaymentMethod('cash');
+      setCashTendered('');
 
       alert('Order completed successfully!');
     } catch (error: any) {
@@ -377,6 +405,27 @@ export const SalesPage: React.FC = () => {
             <span>Total:</span>
             <span>{formatCurrency(total)}</span>
           </div>
+          {paymentMethod === 'cash' && (
+            <>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-700">Cash:</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={cashTendered}
+                  onChange={(e) => setCashTendered(e.target.value)}
+                  className="ml-2 w-32 px-2 py-1 border border-gray-300 rounded-lg text-right"
+                  placeholder="0.00"
+                />
+              </div>
+              {cashTendered && !Number.isNaN(Number(cashTendered)) && Number(cashTendered) >= total && (
+                <div className="flex justify-between text-sm font-semibold text-blue-600">
+                  <span>Change:</span>
+                  <span>{formatCurrency(Number(cashTendered) - total)}</span>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {/* Complete Order Button */}

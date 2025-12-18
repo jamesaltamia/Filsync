@@ -46,6 +46,8 @@ class SalesController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
             'tax_rate' => 'nullable|numeric|min:0|max:100',
             'payment_method' => 'nullable|in:cash,credit',
+            'cash_tendered' => 'nullable|numeric|min:0',
+            'change_due' => 'nullable|numeric',
         ]);
 
         try {

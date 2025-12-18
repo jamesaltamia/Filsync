@@ -51,6 +51,8 @@ class SalesService
                 'tax_rate' => $taxRate,
                 'tax_amount' => $taxAmount,
                 'total' => $total,
+                'cash_tendered' => $data['cash_tendered'] ?? null,
+                'change_due' => $data['change_due'] ?? null,
                 'payment_method' => $paymentMethod,
                 'status' => $status,
             ]);

@@ -57,7 +57,8 @@ class ReportService
     {
         $query = OrderItem::with(['product.category'])
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->where('orders.status', 'completed');
+            // Include both completed and pending (credit) orders; exclude only cancelled
+            ->where('orders.status', '!=', 'cancelled');
 
         if ($startDate) {
             $query->whereDate('orders.created_at', '>=', $startDate);

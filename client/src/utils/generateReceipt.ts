@@ -9,6 +9,16 @@ export const generateReceipt = (order: Order): string => {
         : 'ON ACCOUNT (PAID)'
       : order.payment_method.toUpperCase();
 
+  const cashLine =
+    typeof order.cash_tendered === 'number'
+      ? `Cash: ${formatCurrency(order.cash_tendered)}`
+      : '';
+
+  const changeLine =
+    typeof order.change_due === 'number'
+      ? `Change: ${formatCurrency(order.change_due)}`
+      : '';
+
   const receipt = `
 ================================
         RECEIPT
@@ -24,6 +34,8 @@ ${order.items?.map(item =>
 ).join('\n') || ''}
 --------------------------------
 TOTAL: ${formatCurrency(order.total)}
+${cashLine}
+${changeLine}
 Payment: ${paymentLine}
 ================================
 Thank you for your purchase!

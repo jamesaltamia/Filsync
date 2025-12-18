@@ -25,6 +25,9 @@ export type Order = {
   payment_method: 'cash' | 'credit';
   status: 'pending' | 'completed' | 'cancelled';
   items?: OrderItem[];
+  // Optional, used on frontend for displaying receipts
+  cash_tendered?: number;
+  change_due?: number;
   created_at: string;
   updated_at: string;
 };
