@@ -29,9 +29,11 @@ ${order.customer ? `Customer: ${order.customer.full_name || `${order.customer.fi
 ${order.customer?.student_id ? `ID: ${order.customer.student_id}` : ''}
 --------------------------------
 ITEMS:
-${order.items?.map(item => 
-  `${item.product?.name || 'Product'} x${item.quantity} @ ${formatCurrency(item.price)} = ${formatCurrency(item.subtotal)}`
-).join('\n') || ''}
+${order.items?.map(item => {
+  const productName = item.product?.name || 'Product';
+  const size = item.product?.size ? ` (${item.product.size})` : '';
+  return `${productName}${size} x${item.quantity} @ ${formatCurrency(item.price)} = ${formatCurrency(item.subtotal)}`;
+}).join('\n') || ''}
 --------------------------------
 TOTAL: ${formatCurrency(order.total)}
 ${cashLine}

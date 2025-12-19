@@ -39,17 +39,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <div className="flex items-center justify-center h-16 bg-blue-900">
           <h1 className="text-xl font-bold">FilSync POS</h1>
         </div>
-        
-        {/* User Info */}
-        <div className="px-4 py-3 bg-blue-900 border-b border-white-700">
-          <p className="text-sm font-semibold text-white">{user?.name}</p>
-          <p className="text-xs text-gray-400">{user?.email}</p>
-          <span className={`inline-block mt-2 px-2 py-1 text-xs font-semibold rounded ${
-            user?.role === 'admin' ? 'bg-purple-600 text-white' : 'bg-green-600 text-white'
-          }`}>
-            {user?.role?.toUpperCase()}
-          </span>
-        </div>
 
         <nav className="mt-4 flex-1">
           {navigation.map((item) => {
@@ -86,7 +75,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           <h2 className="text-xl font-semibold">
             {navigation.find((item) => item.path === location.pathname)?.name || 'Dashboard'}
           </h2>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-3">
+              <div className="text-right">
+                <p className="text-sm font-semibold text-gray-800">{user?.name}</p>
+                <p className="text-xs text-gray-500">{user?.email}</p>
+              </div>
+              <span className={`px-3 py-1 text-xs font-semibold rounded ${
+                user?.role === 'admin' ? 'bg-purple-600 text-white' : 'bg-green-600 text-white'
+              }`}>
+                {user?.role?.toUpperCase()}
+              </span>
+            </div>
             <span className="text-gray-600">
               {new Date().toLocaleDateString('en-US', {
                 weekday: 'long',

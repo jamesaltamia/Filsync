@@ -11,6 +11,13 @@ export const salesService = {
     return response.data;
   },
 
+  getProductByBarcode: async (barcode: string): Promise<Product> => {
+    const response = await api.get('/sales/products/barcode', {
+      params: { barcode },
+    });
+    return response.data;
+  },
+
   createOrder: async (data: {
     customer_id?: number;
     items: Array<{

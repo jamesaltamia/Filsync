@@ -155,7 +155,10 @@ export const OrdersHistoryPage: React.FC = () => {
                 {selectedOrder.items?.map((item) => (
                   <div key={item.id} className="flex justify-between p-2 bg-gray-50 rounded">
                     <div>
-                      <p className="font-medium">{item.product?.name}</p>
+                      <p className="font-medium">
+                        {item.product?.name}
+                        {item.product?.size && <span className="text-gray-600 font-normal"> ({item.product.size})</span>}
+                      </p>
                       <p className="text-sm text-gray-600">
                         {item.quantity} x {formatCurrency(item.price)}
                       </p>

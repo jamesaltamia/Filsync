@@ -68,4 +68,59 @@ class SettingsController extends Controller
 
         return response()->json(['message' => 'Setting updated successfully']);
     }
+
+    public function bulkUpdate(Request $request)
+    {
+        $validated = $request->validate([
+            'settings' => 'required|array',
+            'settings.*.key' => 'required|string',
+            'settings.*.value' => 'required',
+            'settings.*.type' => 'nullable|in:string,number,boolean,json',
+        ]);
+
+        foreach ($validated['settings'] as $setting) {
+            Setting::setValue(
+                $setting['key'],
+                (string) $setting['value'],
+                $setting['type'] ?? 'string',
+                null
+            );
+        }
+
+        return response()->json(['message' => 'Settings updated successfully']);
+    }
+
+    public function getByKeys(Request $request)
+    {
+        $keysInput = $request->input('keys');
+        $keys = is_array($keysInput) ? $keysInput : (is_string($keysInput) ? explode(',', $keysInput) : []);
+        
+        if (empty($keys)) {
+            return response()->json([]);
+        }
+
+        $settings = Setting::whereIn('key', $keys)->get();
+        
+        $result = [];
+        foreach ($keys as $key) {
+            $setting = $settings->firstWhere('key', $key);
+            $result[$key] = $setting ? $this->castValue($setting->value, $setting->type) : null;
+        }
+
+        return response()->json($result);
+    }
+
+    private function castValue($value, $type)
+    {
+        switch ($type) {
+            case 'boolean':
+                return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+            case 'number':
+                return is_numeric($value) ? (strpos($value, '.') !== false ? (float) $value : (int) $value) : 0;
+            case 'json':
+                return json_decode($value, true);
+            default:
+                return $value;
+        }
+    }
 }

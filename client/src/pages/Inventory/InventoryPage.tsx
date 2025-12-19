@@ -28,6 +28,7 @@ export const InventoryPage: React.FC = () => {
     stock: '',
     low_stock_threshold: '10',
     sku: '',
+    barcode: '',
     is_active: true,
   });
   const [productImage, setProductImage] = useState<File | null>(null);
@@ -92,6 +93,9 @@ export const InventoryPage: React.FC = () => {
       formData.append('stock', String(productForm.stock));
       formData.append('low_stock_threshold', String(productForm.low_stock_threshold));
       formData.append('sku', productForm.sku || '');
+      if (productForm.barcode) {
+        formData.append('barcode', productForm.barcode);
+      }
       formData.append('is_active', productForm.is_active ? '1' : '0');
       
       if (productImage) {
@@ -132,6 +136,7 @@ export const InventoryPage: React.FC = () => {
       stock: String(product.stock),
       low_stock_threshold: String(product.low_stock_threshold),
       sku: product.sku || '',
+      barcode: product.barcode || '',
       is_active: product.is_active,
     });
     setImagePreview(product.image || null);
@@ -192,6 +197,7 @@ export const InventoryPage: React.FC = () => {
       stock: '',
       low_stock_threshold: '10',
       sku: '',
+      barcode: '',
       is_active: true,
     });
     setProductImage(null);
@@ -424,6 +430,13 @@ export const InventoryPage: React.FC = () => {
             label="SKU (Optional)"
             value={productForm.sku}
             onChange={(e) => setProductForm({ ...productForm, sku: e.target.value })}
+          />
+          <Input
+            label="Barcode (Optional)"
+            value={productForm.barcode}
+            onChange={(e) => setProductForm({ ...productForm, barcode: e.target.value })}
+            placeholder="Scan or enter barcode"
+            description="Unique barcode for this product variant (e.g., UNIFORM-F-SM-001)"
           />
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

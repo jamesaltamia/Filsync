@@ -19,6 +19,7 @@ export type Product = {
   low_stock_threshold: number;
   image?: string;
   sku?: string;
+  barcode?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;

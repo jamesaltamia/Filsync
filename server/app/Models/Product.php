@@ -18,6 +18,7 @@ class Product extends Model
         'low_stock_threshold',
         'image',
         'sku',
+        'barcode',
         'is_active',
     ];
 

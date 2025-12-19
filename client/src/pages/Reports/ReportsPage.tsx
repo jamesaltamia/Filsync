@@ -333,7 +333,7 @@ export const ReportsPage: React.FC = () => {
                   {itemSales.map((item, index) => (
                     <tr key={index} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
-                      <td className="px-6 py-4 whitespace-nowrap font-medium">{item.product.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap font-medium">{item.product.name} {item.product.size && <span className="text-gray-500 ml-2">({item.product.size})</span>}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{item.product.category?.name || 'N/A'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">{item.total_quantity}</td>
                       <td className="px-6 py-4 whitespace-nowrap font-semibold text-green-600">

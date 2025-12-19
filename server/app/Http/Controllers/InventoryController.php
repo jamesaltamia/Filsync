@@ -29,7 +29,8 @@ class InventoryController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%");
+                  ->orWhere('sku', 'like', "%{$search}%")
+                  ->orWhere('barcode', 'like', "%{$search}%");
             });
         }
 
@@ -59,6 +60,7 @@ class InventoryController extends Controller
             'low_stock_threshold' => 'required|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'sku' => 'nullable|string|unique:products,sku',
+            'barcode' => 'nullable|string|unique:products,barcode',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -96,6 +98,7 @@ class InventoryController extends Controller
             'low_stock_threshold' => 'required|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'sku' => 'nullable|string|unique:products,sku,' . $id,
+            'barcode' => 'nullable|string|unique:products,barcode,' . $id,
             'is_active' => 'nullable|boolean',
         ]);
 

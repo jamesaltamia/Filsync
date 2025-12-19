@@ -36,6 +36,7 @@ Route::put('/stock/{id}', [StockController::class, 'update']);
 
 // Sales (POS)
 Route::get('/sales/products', [SalesController::class, 'index']);
+Route::get('/sales/products/barcode', [SalesController::class, 'findByBarcode']);
 Route::post('/sales', [SalesController::class, 'store']);
 
 // Orders History
@@ -58,5 +59,7 @@ Route::get('/reports/credit-sales', [ReportController::class, 'creditSales']);
     // Settings
     Route::get('/settings/{key}/value', [SettingsController::class, 'getValue']);
     Route::put('/settings/{key}/value', [SettingsController::class, 'setValue']);
+    Route::post('/settings/bulk-update', [SettingsController::class, 'bulkUpdate']);
+    Route::get('/settings/get-by-keys', [SettingsController::class, 'getByKeys']);
     Route::apiResource('settings', SettingsController::class);
 });

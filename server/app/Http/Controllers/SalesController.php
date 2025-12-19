@@ -29,12 +29,33 @@ class SalesController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%");
+                  ->orWhere('sku', 'like', "%{$search}%")
+                  ->orWhere('barcode', 'like', "%{$search}%");
             });
         }
 
         $products = $query->orderBy('name')->get();
         return response()->json($products);
+    }
+
+    public function findByBarcode(Request $request)
+    {
+        $barcode = $request->input('barcode');
+        
+        if (!$barcode) {
+            return response()->json(['error' => 'Barcode is required'], 400);
+        }
+
+        $product = Product::with('category')
+            ->where('barcode', $barcode)
+            ->where('is_active', true)
+            ->first();
+
+        if (!$product) {
+            return response()->json(['error' => 'Product not found'], 404);
+        }
+
+        return response()->json($product);
     }
 
     public function store(Request $request)

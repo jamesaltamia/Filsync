@@ -28,6 +28,11 @@ export const SalesPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'credit'>('cash');
   const [cashTendered, setCashTendered] = useState<string>('');
+  
+  // Barcode scanning state
+  const [barcodeInput, setBarcodeInput] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
+  const barcodeInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -37,6 +42,37 @@ export const SalesPage: React.FC = () => {
   useEffect(() => {
     fetchProducts();
   }, [selectedCategory, searchQuery]);
+
+  // Handle barcode scan
+  const handleBarcodeScan = async (barcode: string) => {
+    if (!barcode || barcode.length < 3) return; // Minimum barcode length
+    
+    setIsScanning(true);
+    try {
+      const product = await salesService.getProductByBarcode(barcode);
+      
+      // Check stock
+      if (product.stock <= 0) {
+        alert(`Product "${product.name}" is out of stock!`);
+        return;
+      }
+
+      // Add to cart
+      addToCart(product);
+      
+      // Visual feedback - show success message briefly
+      console.log(`✓ Scanned: ${product.name}${product.size ? ` (${product.size})` : ''}`);
+      
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        alert(`Product with barcode "${barcode}" not found!`);
+      } else {
+        alert('Error scanning barcode. Please try again.');
+      }
+    } finally {
+      setIsScanning(false);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -222,6 +258,33 @@ export const SalesPage: React.FC = () => {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Product Catalog */}
       <div className="lg:col-span-2 space-y-4">
+        {/* Barcode Scanner Input */}
+        <div className="relative">
+          <input
+            ref={barcodeInputRef}
+            type="text"
+            value={barcodeInput}
+            onChange={(e) => {
+              setBarcodeInput(e.target.value);
+            }}
+            onKeyDown={async (e) => {
+              // When Enter is pressed, process the barcode
+              if (e.key === 'Enter' && barcodeInput.trim()) {
+                e.preventDefault();
+                const barcode = barcodeInput.trim();
+                setBarcodeInput(''); // Clear input immediately
+                await handleBarcodeScan(barcode);
+              }
+            }}
+            placeholder={isScanning ? "⏳ Scanning..." : "📷 Scan barcode here (or type manually)"}
+            className="w-full px-4 py-2 border-2 border-dashed border-green-400 bg-green-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-center font-mono text-lg"
+            autoFocus
+          />
+          <p className="text-xs text-gray-500 mt-1 text-center">
+            Point barcode scanner here and scan. Press Enter after typing manually.
+          </p>
+        </div>
+
         {/* Search */}
         <div className="relative">
           <input
@@ -284,7 +347,10 @@ export const SalesPage: React.FC = () => {
                   <span className="text-4xl">📦</span>
                 )}
               </div>
-              <h3 className="font-medium text-sm mb-1">{product.name}</h3>
+              <h3 className="font-medium text-sm mb-1">
+                {product.name}
+                {product.size && <span className="text-gray-600 font-normal"> ({product.size})</span>}
+              </h3>
               <p className="text-green-600 font-bold">{formatCurrency(product.price)}</p>
               <p className="text-xs text-gray-500">Stock: {product.stock}</p>
             </div>
@@ -370,7 +436,10 @@ export const SalesPage: React.FC = () => {
             cart.map((item) => (
               <div key={item.product_id} className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
                 <div className="flex-1">
-                  <p className="font-medium text-sm">{item.product.name}</p>
+                  <p className="font-medium text-sm">
+                    {item.product.name}
+                    {item.product.size && <span className="text-gray-600 font-normal"> ({item.product.size})</span>}
+                  </p>
                   <p className="text-xs text-gray-600">{formatCurrency(item.price)}</p>
                 </div>
                 <div className="flex items-center space-x-2">
