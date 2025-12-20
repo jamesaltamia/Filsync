@@ -28,11 +28,11 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
+    <div className="min-h-screen bg-gray-200 flex items-center justify-center p-4">
+      <div className="bg-blue-100 border border-gray-300 rounded-lg shadow-2xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">FilSync POS</h1>
-          <p className="text-gray-600">Sign in to your account</p>
+          <p className="text-gray-500">Sign in to your account</p>
         </div>
 
         {error && (
@@ -47,7 +47,7 @@ export const LoginPage: React.FC = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@filsync.com"
+            placeholder="Enter your email"
             required
           />
 
@@ -63,11 +63,21 @@ export const LoginPage: React.FC = () => {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full"
+            className="w-full mt-6"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
+
+        <p className="mt-4 text-center text-gray-600">Forgot password?</p>
+        <br />
+        <hr />
+
+        <div className="mt-6 text-center">
+          <Button className='bg-green-600'>
+            Create new account
+          </Button>
+        </div>
       </div>
     </div>
   );
