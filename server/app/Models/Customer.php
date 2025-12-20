@@ -11,7 +11,9 @@ class Customer extends Model
         'student_id',
         'first_name',
         'last_name',
+        'year_level',
         'course',
+        'department',
         'phone',
         'type',
     ];

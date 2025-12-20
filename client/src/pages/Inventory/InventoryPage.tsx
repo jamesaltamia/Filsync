@@ -219,135 +219,162 @@ export const InventoryPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Inventory Management</h1>
-        <Button onClick={() => setShowProductModal(true)}>+ Add Product</Button>
-      </div>
+    // Main Container: Fixed height to prevent body scroll
+    <div className="h-[calc(100vh-6rem)]">
+      
+      {/* Card Container: Flex column to manage internal scrolling */}
+      <div className="bg-white rounded-lg shadow-md flex flex-col h-full overflow-hidden">
+        
+        {/* ----------------- FIXED HEADER SECTION ----------------- */}
+        <div className="p-4 border-b bg-white z-10 space-y-4">
+            {/* Header Title & Add Button */}
+            <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold text-gray-800">Inventory Management</h1>
+                <Button onClick={() => setShowProductModal(true)}>+ Add Product</Button>
+            </div>
 
-      {/* Low Stock Alerts */}
-      {lowStockProducts.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h3 className="font-semibold text-red-800 mb-2">⚠️ Low Stock Alerts</h3>
-          <div className="space-y-2">
-            {lowStockProducts.map((product) => (
-              <div key={product.id} className="flex justify-between items-center">
-                <span>
-                  {product.name} - Stock: {product.stock} (Threshold: {product.low_stock_threshold})
-                </span>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setSelectedProduct(product);
-                    setShowStockModal(true);
-                  }}
+            {/* Low Stock Alerts (Fixed, won't scroll away) */}
+            {lowStockProducts.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm max-h-24 overflow-y-auto">
+                <h3 className="font-semibold text-red-800 flex items-center gap-2 sticky top-0 bg-red-50">
+                    ⚠️ Low Stock Alerts ({lowStockProducts.length})
+                </h3>
+                <div className="mt-1 space-y-1">
+                    {lowStockProducts.map((product) => (
+                    <div key={product.id} className="flex justify-between items-center text-red-700">
+                        <span>{product.name} - Stock: {product.stock}</span>
+                        <button
+                        className="underline text-xs hover:text-red-900"
+                        onClick={() => {
+                            setSelectedProduct(product);
+                            setShowStockModal(true);
+                        }}
+                        >
+                        Restock
+                        </button>
+                    </div>
+                    ))}
+                </div>
+                </div>
+            )}
+
+            {/* Search & Filter Controls */}
+            <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1 relative">
+                    <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+                    <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+                <select
+                    value={selectedCategory || ''}
+                    onChange={(e) => setSelectedCategory(e.target.value ? Number(e.target.value) : null)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg bg-white"
                 >
-                  Add Stock
-                </Button>
-              </div>
-            ))}
-          </div>
+                    <option value="">All Categories</option>
+                    {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                    </option>
+                    ))}
+                </select>
+            </div>
         </div>
-      )}
 
-      {/* Filters */}
-      <div className="flex space-x-4">
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-        />
-        <select
-          value={selectedCategory || ''}
-          onChange={(e) => setSelectedCategory(e.target.value ? Number(e.target.value) : null)}
-          className="px-4 py-2 border border-gray-300 rounded-lg"
-        >
-          <option value="">All Categories</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
+        {/* ----------------- SCROLLABLE TABLE SECTION ----------------- */}
+        <div className="flex-1 overflow-y-auto bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200">
+            {/* Sticky Table Header */}
+            <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
+                <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+                {products.length === 0 ? (
+                    <tr>
+                        <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
+                            No products found in inventory.
+                        </td>
+                    </tr>
+                ) : (
+                    products.map((product) => (
+                    <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="font-medium text-gray-900">{product.name}</div>
+                        {product.size && <div className="text-xs text-gray-500">Size: {product.size}</div>}
+                        <div className="text-xs text-gray-400">{product.sku}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {product.category?.name || 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-700">
+                            {formatCurrency(product.price)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`font-mono font-bold ${product.stock <= product.low_stock_threshold ? 'text-red-600' : 'text-gray-700'}`}>
+                            {product.stock}
+                        </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            product.stock > product.low_stock_threshold
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-red-100 text-red-700'
+                            }`}
+                        >
+                            {product.stock > product.low_stock_threshold ? 'In Stock' : 'Low Stock'}
+                        </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                            <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                                setSelectedProduct(product);
+                                setShowStockModal(true);
+                            }}
+                            title="Add Stock"
+                            >
+                            +
+                            </Button>
+                            <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleEditProduct(product)}
+                            >
+                            Edit
+                            </Button>
+                            <Button
+                            size="sm"
+                            variant="danger"
+                            onClick={() => handleDeleteProduct(product)}
+                            disabled={loading}
+                            >
+                            Delete
+                            </Button>
+                        </div>
+                        </td>
+                    </tr>
+                    ))
+                )}
+            </tbody>
+            </table>
+        </div>
       </div>
 
-      {/* Products Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {product.name}
-                  {product.size && <span className="text-gray-500 ml-2">({product.size})</span>}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">{product.category?.name || 'N/A'}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{formatCurrency(product.price)}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={product.stock <= product.low_stock_threshold ? 'text-red-600 font-bold' : ''}>
-                    {product.stock}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      product.stock > 10
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'
-                    }`}
-                  >
-                    {product.stock > 10 ? 'In Stock' : 'Low Stock'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex space-x-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedProduct(product);
-                        setShowStockModal(true);
-                      }}
-                    >
-                      Add Stock
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => handleEditProduct(product)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      onClick={() => handleDeleteProduct(product)}
-                      disabled={loading}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Add/Edit Product Modal */}
+      {/* ----------------- MODALS (Unchanged) ----------------- */}
       <Modal
         isOpen={showProductModal}
         onClose={() => {
@@ -404,39 +431,43 @@ export const InventoryPage: React.FC = () => {
               </select>
             </div>
           )}
-          <Input
-            label="Price"
-            type="number"
-            step="0.01"
-            value={productForm.price}
-            onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
-            required
-          />
-          <Input
-            label="Initial Stock"
-            type="number"
-            value={productForm.stock}
-            onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })}
-            required
-          />
-          <Input
-            label="Low Stock Threshold"
-            type="number"
-            value={productForm.low_stock_threshold}
-            onChange={(e) => setProductForm({ ...productForm, low_stock_threshold: e.target.value })}
-            required
-          />
-          <Input
-            label="SKU (Optional)"
-            value={productForm.sku}
-            onChange={(e) => setProductForm({ ...productForm, sku: e.target.value })}
-          />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+                label="Price"
+                type="number"
+                step="0.01"
+                value={productForm.price}
+                onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+                required
+            />
+            <Input
+                label="Initial Stock"
+                type="number"
+                value={productForm.stock}
+                onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })}
+                required
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+                label="Low Stock Threshold"
+                type="number"
+                value={productForm.low_stock_threshold}
+                onChange={(e) => setProductForm({ ...productForm, low_stock_threshold: e.target.value })}
+                required
+            />
+            <Input
+                label="SKU (Optional)"
+                value={productForm.sku}
+                onChange={(e) => setProductForm({ ...productForm, sku: e.target.value })}
+            />
+          </div>
           <Input
             label="Barcode (Optional)"
             value={productForm.barcode}
             onChange={(e) => setProductForm({ ...productForm, barcode: e.target.value })}
             placeholder="Scan or enter barcode"
-            description="Unique barcode for this product variant (e.g., UNIFORM-F-SM-001)"
+            description="Unique barcode for this product variant"
           />
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -458,7 +489,7 @@ export const InventoryPage: React.FC = () => {
               </div>
             )}
           </div>
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end space-x-2 pt-4 border-t">
             <Button
               variant="outline"
               onClick={() => {
@@ -486,15 +517,18 @@ export const InventoryPage: React.FC = () => {
         title={`Add Stock - ${selectedProduct?.name}`}
       >
         <div className="space-y-4">
-          <p className="text-gray-600">Current Stock: {selectedProduct?.stock}</p>
+          <p className="text-gray-600 bg-gray-50 p-3 rounded-lg border">
+            Current Stock: <span className="font-bold text-gray-900">{selectedProduct?.stock}</span>
+          </p>
           <Input
             label="Quantity to Add"
             type="number"
             value={stockQuantity}
             onChange={(e) => setStockQuantity(e.target.value)}
             required
+            autoFocus
           />
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end space-x-2 pt-2">
             <Button
               variant="outline"
               onClick={() => {
@@ -514,4 +548,3 @@ export const InventoryPage: React.FC = () => {
     </div>
   );
 };
-

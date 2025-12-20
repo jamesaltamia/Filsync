@@ -44,7 +44,9 @@ class CustomerController extends Controller
             'student_id' => 'nullable|string|unique:customers,student_id',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
+            'year_level' => 'nullable|string|max:255',
             'course' => 'nullable|string|max:255',
+            'department' => 'nullable|string|max:255',
             'phone' => 'nullable|string',
             'type' => 'required|in:student,teacher',
         ]);
@@ -67,7 +69,9 @@ class CustomerController extends Controller
             'student_id' => 'nullable|string|unique:customers,student_id,' . $id,
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
+            'year_level' => 'nullable|string|max:255',
             'course' => 'nullable|string|max:255',
+            'department' => 'nullable|string|max:255',
             'phone' => 'nullable|string',
             'type' => 'required|in:student,teacher',
         ]);
@@ -100,10 +104,11 @@ class CustomerController extends Controller
     {
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:10240',
+            'type' => 'required|in:student,teacher',
         ]);
 
         try {
-            $result = $this->importService->importFromExcel($request->file('file'));
+            $result = $this->importService->importFromExcel($request->file('file'), $request->type);
             
             return response()->json([
                 'message' => 'Import completed',

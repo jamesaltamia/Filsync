@@ -68,14 +68,6 @@ export const LoginPage: React.FC = () => {
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
-
-        <div className="mt-6 p-4 bg-gray-50 rounded border border-gray-200">
-          <p className="text-sm text-gray-600 font-semibold mb-2">Demo Accounts:</p>
-          <div className="text-xs text-gray-600 space-y-1">
-            <p><strong>Admin:</strong> admin@filsync.com / admin123</p>
-            <p><strong>Cashier:</strong> cashier@filsync.com / cashier123</p>
-          </div>
-        </div>
       </div>
     </div>
   );

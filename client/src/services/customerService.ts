@@ -36,9 +36,10 @@ export const customerService = {
     return response.data;
   },
 
-  importCustomers: async (file: File) => {
+  importCustomers: async (file: File, type: 'student' | 'teacher') => {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('type', type);
     const response = await api.post('/customers/import', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
