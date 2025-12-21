@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
+import LogoImg from '../../assets/Filamer.png';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -31,6 +32,11 @@ export const LoginPage: React.FC = () => {
     <div className="min-h-screen bg-gray-200 flex items-center justify-center p-4">
       <div className="bg-blue-100 border border-gray-300 rounded-lg shadow-2xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
+          <img
+            src={LogoImg}
+            alt="Logo"
+            className="w-15 h-15 object-contain mx-auto" // Adjust size as needed
+          />
           <h1 className="text-3xl font-bold text-gray-800 mb-2">FilSync POS</h1>
           <p className="text-gray-500">Sign in to your account</p>
         </div>
@@ -69,12 +75,20 @@ export const LoginPage: React.FC = () => {
           </Button>
         </form>
 
-        <p className="mt-4 text-center text-gray-600">Forgot password?</p>
+        <p 
+          className="mt-4 text-center text-gray-600 cursor-pointer hover:text-blue-600 underline"
+          onClick={() => navigate('/forgot-password')}
+        >
+          Forgot password?
+        </p>
         <br />
         <hr />
 
         <div className="mt-6 text-center">
-          <Button className='bg-green-600'>
+          <Button 
+            className='bg-green-600 w-full'
+            onClick={() => navigate('/register')}
+          >
             Create new account
           </Button>
         </div>

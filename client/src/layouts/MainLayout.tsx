@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import LogoImg from '../assets/Filamer.png';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -37,7 +38,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     <div className="min-h-screen bg-gray-100">
       {/* Sidebar */}
       <div className="fixed inset-y-0 left-0 w-64 bg-blue-800 text-white flex flex-col">
-        <div className="flex items-center justify-center h-16 bg-blue-900">
+        <div className="flex items-center justify-center h-16 bg-blue-900 space-x-2">
+          <img
+            src={LogoImg} // Replace with your actual path, e.g., src={logoImg}
+            alt="Logo"
+            className="w-10 h-10 object-contain " // Adjust size as needed
+          />
           <h1 className="text-xl font-bold">FilSync POS</h1>
         </div>
 

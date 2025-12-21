@@ -3,6 +3,8 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { MainLayout } from './layouts/MainLayout';
 import { LoginPage } from './pages/Auth/LoginPage';
+import { RegisterPage } from './pages/Auth/RegisterPage';
+import { ForgotPasswordPage } from './pages/Auth/ForgotPasswordPage';
 import { DashboardPage } from './pages/Dashboard/DashboardPage';
 import { InventoryPage } from './pages/Inventory/InventoryPage';
 import { SalesPage } from './pages/Sales/SalesPage';
@@ -19,6 +21,8 @@ function App() {
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
           {/* Protected routes wrapped in MainLayout */}
           <Route
