@@ -186,11 +186,7 @@ export const CustomersPage: React.FC = () => {
           <Button variant="secondary" onClick={() => setShowStudentImportModal(true)}>
             📤 Upload Students
           </Button>
-          <Button variant="secondary" onClick={() => setShowTeacherImportModal(true)}>
-            📤 Upload Teachers
-          </Button>
           <Button onClick={() => setShowStudentAddModal(true)}>+ Add Student</Button>
-          <Button onClick={() => setShowTeacherAddModal(true)}>+ Add Teacher</Button>
         </div>
       </div>
 
@@ -259,6 +255,16 @@ export const CustomersPage: React.FC = () => {
             )}
           </tbody>
         </table>
+      </div>
+      
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold"></h1>
+        <div className="flex space-x-2">
+          <Button variant="secondary" onClick={() => setShowTeacherImportModal(true)}>
+            📤 Upload Teachers
+          </Button>
+          <Button onClick={() => setShowTeacherAddModal(true)}>+ Add Teacher</Button>
+        </div>
       </div>
 
       {/* Teachers Table */}

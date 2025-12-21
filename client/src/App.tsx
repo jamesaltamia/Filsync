@@ -10,6 +10,7 @@ import { OrdersHistoryPage } from './pages/OrdersHistory/OrdersHistoryPage';
 import { CustomersPage } from './pages/Customers/CustomersPage';
 import { ReportsPage } from './pages/Reports/ReportsPage';
 import { SettingsPage } from './pages/Settings/SettingsPage';
+import { CanteenPage } from './pages/Canteen/CanteenPage';
 
 function App() {
   return (
@@ -34,6 +35,14 @@ function App() {
                       element={
                         <ProtectedRoute allowedRoles={['admin']}>
                           <InventoryPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/canteen"
+                      element={
+                        <ProtectedRoute allowedRoles={['admin']}>
+                          <CanteenPage />
                         </ProtectedRoute>
                       }
                     />

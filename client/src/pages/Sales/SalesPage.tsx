@@ -527,7 +527,7 @@ export const SalesPage: React.FC = () => {
             isLoading={loading}
             disabled={cart.length === 0}
             >
-            Checkout
+            Complete Order
             </Button>
         </div>
       </div>

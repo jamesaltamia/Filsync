@@ -5,12 +5,13 @@ export interface DailySales {
   total_tax: number;
 }
 
-export interface MonthlySales extends DailySales {}
+export interface MonthlySales extends DailySales { }
 
-export interface YearlySales extends DailySales {}
+export interface YearlySales extends DailySales { }
 
 export interface ItemSales {
   product: {
+    size: any;
     id: number;
     name: string;
     category?: {
@@ -30,4 +31,6 @@ export interface CreditSale {
   total: number;
   status: 'Paid' | 'Unpaid';
 }
+
+
 

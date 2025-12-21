@@ -1,65 +1,69 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { reportService } from '../../services/reportService';
+import { canteenService } from '../../services/canteenService';
+import { orderService } from '../../services/orderService';
 import type { DailySales, ItemSales, CreditSale } from '../../types/report';
+import type { Bill } from '../../types/canteen';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
-import { orderService } from '../../services/orderService';
 
 export const ReportsPage: React.FC = () => {
-  const [reportType, setReportType] = useState<'daily' | 'monthly' | 'yearly' | 'items' | 'credit'>('daily');
+  const [reportType, setReportType] =
+    useState<'daily' | 'monthly' | 'yearly' | 'items' | 'credit' | 'canteen'>('daily');
+
   const [dailyData, setDailyData] = useState<DailySales | null>(null);
   const [itemSales, setItemSales] = useState<ItemSales[]>([]);
   const [creditSales, setCreditSales] = useState<CreditSale[]>([]);
+  const [canteenBills, setCanteenBills] = useState<Bill[]>([]);
+
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [loading, setLoading] = useState(false);
+
   const printRef = useRef<HTMLDivElement>(null);
 
-  const fetchDailyReport = async () => {
+  /* ---------------- RESET DATA ON TAB CHANGE ---------------- */
+  useEffect(() => {
+    setDailyData(null);
+    setItemSales([]);
+    setCreditSales([]);
+    setCanteenBills([]);
+  }, [reportType]);
+
+  /* ---------------- FETCHERS ---------------- */
+  const fetchDaily = async () => {
     setLoading(true);
     try {
-      const data = await reportService.getDailySales(date);
-      setDailyData(data);
-    } catch (error) {
-      console.error('Error fetching daily report:', error);
+      setDailyData(await reportService.getDailySales(date));
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchMonthlyReport = async () => {
+  const fetchMonthly = async () => {
     setLoading(true);
     try {
-      const data = await reportService.getMonthlySales(year, month);
-      setDailyData(data);
-    } catch (error) {
-      console.error('Error fetching monthly report:', error);
+      setDailyData(await reportService.getMonthlySales(year, month));
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchYearlyReport = async () => {
+  const fetchYearly = async () => {
     setLoading(true);
     try {
-      const data = await reportService.getYearlySales(year);
-      setDailyData(data);
-    } catch (error) {
-      console.error('Error fetching yearly report:', error);
+      setDailyData(await reportService.getYearlySales(year));
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchItemSales = async () => {
+  const fetchItems = async () => {
     setLoading(true);
     try {
-      const data = await reportService.getItemSales();
-      setItemSales(data);
-    } catch (error) {
-      console.error('Error fetching item sales:', error);
+      setItemSales(await reportService.getItemSales());
     } finally {
       setLoading(false);
     }
@@ -68,185 +72,162 @@ export const ReportsPage: React.FC = () => {
   const fetchCreditSales = async () => {
     setLoading(true);
     try {
-      const data = await reportService.getCreditSales();
-      setCreditSales(data);
-    } catch (error) {
-      console.error('Error fetching credit sales:', error);
+      setCreditSales(await reportService.getCreditSales());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCanteen = async () => {
+    setLoading(true);
+    try {
+      setCanteenBills(await canteenService.getBills());
     } finally {
       setLoading(false);
     }
   };
 
   const handleGenerateReport = () => {
-    if (reportType === 'daily') {
-      fetchDailyReport();
-    } else if (reportType === 'monthly') {
-      fetchMonthlyReport();
-    } else if (reportType === 'yearly') {
-      fetchYearlyReport();
-    } else if (reportType === 'items') {
-      fetchItemSales();
-    } else {
-      fetchCreditSales();
-    }
+    if (reportType === 'daily') fetchDaily();
+    else if (reportType === 'monthly') fetchMonthly();
+    else if (reportType === 'yearly') fetchYearly();
+    else if (reportType === 'items') fetchItems();
+    else if (reportType === 'credit') fetchCreditSales();
+    else fetchCanteen();
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
+  const handlePrint = () => window.print();
 
+  /* ---------------- EXPORT CSV ---------------- */
   const handleExportCSV = () => {
-    let csvContent = '';
+    let csv = '';
     let filename = '';
 
-    if (reportType === 'items' && itemSales.length > 0) {
-      // Export Item Sales
-      csvContent = 'Product,Category,Quantity Sold,Revenue\n';
-      itemSales.forEach((item) => {
-        csvContent += `"${item.product.name}","${item.product.category?.name || 'N/A'}",${item.total_quantity},${item.total_revenue}\n`;
+    if (reportType === 'items') {
+      csv = 'Product,Category,Quantity,Revenue\n';
+      itemSales.forEach(i => {
+        csv += `"${i.product.name}","${i.product.category?.name}",${i.total_quantity},${i.total_revenue}\n`;
       });
-      filename = 'item-sales-report.csv';
-    } else if (dailyData) {
-      // Export Summary
-      const reportPeriod = reportType === 'daily' ? date : 
-                          reportType === 'monthly' ? `${year}-${String(month).padStart(2, '0')}` : 
-                          `${year}`;
-      csvContent = `${reportType.toUpperCase()} SALES REPORT - ${reportPeriod}\n\n`;
-      csvContent += 'Metric,Value\n';
-      csvContent += `Total Orders,${dailyData.total_orders || 0}\n`;
-      csvContent += `Total Revenue,${dailyData.total_revenue || 0}\n`;
-      csvContent += `Subtotal,${dailyData.total_subtotal || 0}\n`;
-      csvContent += `Tax,${dailyData.total_tax || 0}\n`;
-      filename = `${reportType}-sales-report-${reportPeriod}.csv`;
+      filename = 'item-sales.csv';
     }
 
-    // Create and download CSV
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    else if (reportType === 'credit') {
+      csv = 'Teacher,Total Credit\n';
+      creditSales.forEach(c => {
+        csv += `"${c.teacher_name}",${c.total}\n`;
+      });
+      filename = 'credit-sales.csv';
+    }
+
+    else if (reportType === 'canteen') {
+      csv = 'Tenant,Stall,Month,Status,Amount\n';
+      canteenBills.forEach(b => {
+        csv += `"${b.tenant?.name}","${b.tenant?.stall?.name}","${b.month_year}","${b.status}",${b.amount}\n`;
+      });
+      filename = 'canteen-report.csv';
+    }
+
+    else if (dailyData) {
+      csv =
+        `Metric,Value\n` +
+        `Total Orders,${dailyData.total_orders}\n` +
+        `Total Revenue,${dailyData.total_revenue}\n`;
+      filename = `${reportType}-sales.csv`;
+    }
+
+    const blob = new Blob([csv], { type: 'text/csv' });
     const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
     link.click();
-    document.body.removeChild(link);
   };
+
+  const showActions =
+    dailyData ||
+    itemSales.length > 0 ||
+    creditSales.length > 0 ||
+    canteenBills.length > 0;
 
   const getReportTitle = () => {
-    if (reportType === 'daily') return `Daily Sales Report - ${date}`;
-    if (reportType === 'monthly') return `Monthly Sales Report - ${new Date(year, month - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}`;
-    if (reportType === 'yearly') return `Yearly Sales Report - ${year}`;
-    if (reportType === 'items') return 'Item Sales Report';
-    return 'Credit Sales Report (Teachers)';
+    if (reportType === 'daily') {
+      return `Daily Sales Report - ${date}`;
+    }
+
+    if (reportType === 'monthly') {
+      return `Monthly Sales Report - ${new Date(
+        year,
+        month - 1
+      ).toLocaleString('default', { month: 'long', year: 'numeric' })}`;
+    }
+
+    if (reportType === 'yearly') {
+      return `Yearly Sales Report - ${year}`;
+    }
+
+    if (reportType === 'items') {
+      return 'Item Sales Report';
+    }
+
+    if (reportType === 'credit') {
+      return 'Credit Sales Report (Teachers)';
+    }
+
+    return 'Canteen Revenue Report';
   };
 
+  /* ---------------- UI ---------------- */
   return (
     <div className="space-y-6">
+      {/* HEADER */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Reports</h1>
-        {(dailyData || itemSales.length > 0) && (
-          <div className="flex space-x-2 print:hidden">
-            <Button onClick={handlePrint} variant="outline">
-              🖨️ Print Report
-            </Button>
-            <Button onClick={handleExportCSV} variant="outline">
-              📊 Export CSV
-            </Button>
+        {showActions && (
+          <div className="flex gap-2 print:hidden">
+            <Button onClick={handlePrint} variant="outline">🖨️ Print Report</Button>
+            <Button onClick={handleExportCSV} variant="outline">📊 Export CSV</Button>
           </div>
         )}
       </div>
 
-      {/* Report Type Selection */}
+      {/* CONTROLS */}
       <div className="bg-white rounded-lg shadow-md p-6 print:hidden">
-        <div className="flex space-x-4 mb-4">
-          <button
-            onClick={() => setReportType('daily')}
-            className={`px-4 py-2 rounded-lg ${
-              reportType === 'daily' ? 'bg-green-600 text-white' : 'bg-gray-200'
-            }`}
-          >
-            Daily
-          </button>
-          <button
-            onClick={() => setReportType('monthly')}
-            className={`px-4 py-2 rounded-lg ${
-              reportType === 'monthly' ? 'bg-green-600 text-white' : 'bg-gray-200'
-            }`}
-          >
-            Monthly
-          </button>
-          <button
-            onClick={() => setReportType('yearly')}
-            className={`px-4 py-2 rounded-lg ${
-              reportType === 'yearly' ? 'bg-green-600 text-white' : 'bg-gray-200'
-            }`}
-          >
-            Yearly
-          </button>
-          <button
-            onClick={() => setReportType('items')}
-            className={`px-4 py-2 rounded-lg ${
-              reportType === 'items' ? 'bg-green-600 text-white' : 'bg-gray-200'
-            }`}
-          >
-            Item Sales
-          </button>
-          <button
-            onClick={() => setReportType('credit')}
-            className={`px-4 py-2 rounded-lg ${
-              reportType === 'credit' ? 'bg-green-600 text-white' : 'bg-gray-200'
-            }`}
-          >
-            Credit Sales (Teachers)
-          </button>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {['daily', 'monthly', 'yearly', 'items', 'credit', 'canteen'].map(t => (
+            <button
+              key={t}
+              onClick={() => setReportType(t as any)}
+              className={`px-4 py-2 rounded-lg ${reportType === t ? 'bg-green-600 text-white' : 'bg-gray-200'
+                }`}
+            >
+              {t === 'items' ? 'Item Sales' :
+                t === 'credit' ? 'Credit Sales (Teachers)' :
+                  t === 'canteen' ? 'Canteen' : t}
+            </button>
+          ))}
         </div>
 
-        {/* Date/Year Selection */}
         {reportType === 'daily' && (
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg"
-            />
-          </div>
+          <input type="date" value={date} onChange={e => setDate(e.target.value)}
+            className="border px-4 py-2 rounded-lg" />
         )}
 
         {(reportType === 'monthly' || reportType === 'yearly') && (
-          <div className="mb-4 flex space-x-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Year</label>
-              <input
-                type="number"
-                value={year}
-                onChange={(e) => setYear(Number(e.target.value))}
-                className="px-4 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
+          <div className="flex gap-2">
+            <input type="number" value={year} onChange={e => setYear(+e.target.value)}
+              className="border px-4 py-2 rounded-lg" />
             {reportType === 'monthly' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Month</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="12"
-                  value={month}
-                  onChange={(e) => setMonth(Number(e.target.value))}
-                  className="px-4 py-2 border border-gray-300 rounded-lg"
-                />
-              </div>
+              <input type="number" min={1} max={12} value={month}
+                onChange={e => setMonth(+e.target.value)}
+                className="border px-4 py-2 rounded-lg" />
             )}
           </div>
         )}
 
-        <Button onClick={handleGenerateReport} isLoading={loading}>
+        <Button onClick={handleGenerateReport} isLoading={loading} className="mt-4">
           Generate Report
         </Button>
       </div>
 
-      {/* Report Results */}
       {dailyData && reportType !== 'items' && reportType !== 'credit' && (
         <div ref={printRef}>
           {/* Print Header */}
@@ -433,11 +414,10 @@ export const ReportsPage: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            sale.status === 'Paid'
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-yellow-100 text-yellow-700'
-                          }`}
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${sale.status === 'Paid'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-yellow-100 text-yellow-700'
+                            }`}
                         >
                           {sale.status}
                         </span>
@@ -487,7 +467,74 @@ export const ReportsPage: React.FC = () => {
           </Card>
         </div>
       )}
+
+      {/* ================= CANTEEN REPORT ================= */}
+      {reportType === 'canteen' && canteenBills.length > 0 && (
+        <div ref={printRef}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <Card>
+              <p className="text-sm text-gray-600">Total Paid Bills</p>
+              <p className="text-2xl font-bold text-green-600">
+                {formatCurrency(
+                  canteenBills.filter(b => b.status === 'paid')
+                    .reduce((s, b) => s + Number(b.amount), 0)
+                )}
+              </p>
+            </Card>
+
+            <Card>
+              <p className="text-sm text-gray-600">Outstanding Bills</p>
+              <p className="text-2xl font-bold text-red-600">
+                {formatCurrency(
+                  canteenBills.filter(b => b.status === 'unpaid')
+                    .reduce((s, b) => s + Number(b.amount), 0)
+                )}
+              </p>
+            </Card>
+
+            <Card>
+              <p className="text-sm text-gray-600">Occupied Stalls</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {new Set(canteenBills.map(b => b.tenant?.stall?.id)).size}
+              </p>
+            </Card>
+          </div>
+
+          <Card title="Canteen Billing Details">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium">Tenant</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium">Stall</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium">Month</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium">Status</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {canteenBills.map(b => (
+                  <tr key={b.id}>
+                    <td className="px-6 py-4">{b.tenant?.name}</td>
+                    <td className="px-6 py-4">{b.tenant?.stall?.name}</td>
+                    <td className="px-6 py-4">{b.month_year}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-bold ${b.status === 'paid'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-red-100 text-red-700'
+                        }`}>
+                        {b.status.toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right font-semibold">
+                      {formatCurrency(Number(b.amount))}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
-

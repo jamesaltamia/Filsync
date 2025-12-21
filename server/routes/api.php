@@ -10,6 +10,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StockController;
+use App\Http\Controllers\CanteenController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes (no authentication required)
@@ -55,6 +56,21 @@ Route::get('/reports/monthly', [ReportController::class, 'monthly']);
 Route::get('/reports/yearly', [ReportController::class, 'yearly']);
 Route::get('/reports/item-sales', [ReportController::class, 'itemSales']);
 Route::get('/reports/credit-sales', [ReportController::class, 'creditSales']);
+
+// 2. Canteen Management Routes added here
+    Route::prefix('canteen')->group(function () {
+        // Stalls
+        Route::get('/stalls', [CanteenController::class, 'getStalls']);
+        Route::post('/stalls', [CanteenController::class, 'storeStall']);
+
+        // Tenants
+        Route::post('/tenants', [CanteenController::class, 'storeTenant']);
+
+        // Billing & Payments
+        Route::get('/bills', [CanteenController::class, 'getBills']);
+        Route::post('/bills/generate', [CanteenController::class, 'generateMonthlyBills']);
+        Route::post('/bills/{id}/pay', [CanteenController::class, 'markAsPaid']);
+    });
 
     // Settings
     Route::get('/settings/{key}/value', [SettingsController::class, 'getValue']);

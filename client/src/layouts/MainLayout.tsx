@@ -23,6 +23,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     { name: 'Sales', path: '/sales', icon: '🛒', roles: ['admin', 'cashier'] },
     { name: 'Orders History', path: '/orders', icon: '📋', roles: ['admin', 'cashier'] },
     { name: 'Customers', path: '/customers', icon: '👥', roles: ['admin'] },
+    { name: 'Canteen', path: '/canteen', icon: '🏪', roles: ['admin'] },
     { name: 'Reports', path: '/reports', icon: '📈', roles: ['admin', 'cashier'] },
     { name: 'Settings', path: '/settings', icon: '⚙️', roles: ['admin'] },
   ];
@@ -47,9 +48,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center px-6 py-3 text-gray-300 hover:bg-blue-700 transition-colors ${
-                  isActive ? 'bg-blue-700 border-r-4 border-green-500' : ''
-                }`}
+                className={`flex items-center px-6 py-3 text-gray-300 hover:bg-blue-700 transition-colors ${isActive ? 'bg-blue-700 border-r-4 border-green-500' : ''
+                  }`}
               >
                 <span className="mr-3">{item.icon}</span>
                 <span>{item.name}</span>
@@ -81,9 +81,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <p className="text-sm font-semibold text-gray-800">{user?.name}</p>
                 <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
-              <span className={`px-3 py-1 text-xs font-semibold rounded ${
-                user?.role === 'admin' ? 'bg-purple-600 text-white' : 'bg-green-600 text-white'
-              }`}>
+              <span className={`px-3 py-1 text-xs font-semibold rounded ${user?.role === 'admin' ? 'bg-purple-600 text-white' : 'bg-green-600 text-white'
+                }`}>
                 {user?.role?.toUpperCase()}
               </span>
             </div>
