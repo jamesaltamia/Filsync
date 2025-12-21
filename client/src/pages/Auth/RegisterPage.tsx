@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
+import { Modal } from '../../components/Modal';
 import { authService } from '../../services/authService';
 import LogoImg from '../../assets/Filamer.png';
 
@@ -13,8 +13,9 @@ export const RegisterPage: React.FC = () => {
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [role, setRole] = useState<'admin' | 'cashier'>('cashier');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,7 +36,7 @@ export const RegisterPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await authService.register({
+      await authService.register({
         name,
         email,
         password,
@@ -43,9 +44,11 @@ export const RegisterPage: React.FC = () => {
         role,
       });
 
-      // Auto-login after registration
-      await login(email, password);
-      navigate('/');
+      // Show success message
+      setSuccess('Account created successfully! Redirecting to login...');
+      
+      // Show custom modal with FilSync POS title
+      setShowSuccessModal(true);
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 
                           err.response?.data?.errors?.[Object.keys(err.response?.data?.errors || {})[0]]?.[0] ||
@@ -72,6 +75,12 @@ export const RegisterPage: React.FC = () => {
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
             {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+            {success}
           </div>
         )}
 
@@ -163,6 +172,32 @@ export const RegisterPage: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* Success Modal */}
+      <Modal
+        isOpen={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          navigate('/login');
+        }}
+        title="FilSync POS"
+        size="sm"
+      >
+        <div className="text-center">
+          <p className="mb-4 text-gray-700">
+            Account has been successfully created! You will now be redirected to the login page.
+          </p>
+          <Button
+            onClick={() => {
+              setShowSuccessModal(false);
+              navigate('/login');
+            }}
+            className="w-full"
+          >
+            OK
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 };
