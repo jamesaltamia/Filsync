@@ -75,7 +75,7 @@ export const LoginPage: React.FC = () => {
           </Button>
         </form>
 
-        <p 
+        <p
           className="mt-4 text-center text-gray-600 cursor-pointer hover:text-blue-600 underline"
           onClick={() => navigate('/forgot-password')}
         >
@@ -85,7 +85,7 @@ export const LoginPage: React.FC = () => {
         <hr />
 
         <div className="mt-6 text-center">
-          <Button 
+          <Button
             className='bg-green-600 w-full'
             onClick={() => navigate('/register')}
           >

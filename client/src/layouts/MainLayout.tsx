@@ -23,10 +23,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     { name: 'Inventory', path: '/inventory', icon: '📦', roles: ['admin'] },
     { name: 'Sales', path: '/sales', icon: '🛒', roles: ['admin', 'cashier'] },
     { name: 'Orders History', path: '/orders', icon: '📋', roles: ['admin', 'cashier'] },
-    { name: 'Customers', path: '/customers', icon: '👥', roles: ['admin'] },
     { name: 'Canteen', path: '/canteen', icon: '🏪', roles: ['admin'] },
+    { name: 'Customers', path: '/customers', icon: '👥', roles: ['admin'] },
     { name: 'Reports', path: '/reports', icon: '📈', roles: ['admin', 'cashier'] },
-    { name: 'Settings', path: '/settings', icon: '⚙️', roles: ['admin'] },
   ];
 
   // Filter navigation based on user role
@@ -62,6 +61,23 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               </Link>
             );
           })}
+
+          {/* Divider */}
+          <div className="my-4 border-t border-blue-600 mx-6"></div>
+
+          {/* Settings */}
+          {user?.role === 'admin' && (
+            <Link
+              to="/settings"
+              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-blue-700 transition-colors ${location.pathname === '/settings'
+                ? 'bg-blue-700 border-r-4 border-green-500'
+                : ''
+                }`}
+            >
+              <span className="mr-3">⚙️</span>
+              <span>Settings</span>
+            </Link>
+          )}
         </nav>
 
         {/* Logout Button */}
