@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
@@ -7,6 +7,8 @@ import { settingsService, type SettingsData } from '../../services/settingsServi
 export const SettingsPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [settings, setSettings] = useState<SettingsData>({
     // Inventory Control Settings
     default_low_stock_alert_quantity: 10,
@@ -41,39 +43,52 @@ export const SettingsPage: React.FC = () => {
 
   const loadSettings = async () => {
     setLoading(true);
+    setError('');
+    setSuccess('');
     try {
       const keys = Object.keys(settings) as Array<keyof SettingsData>;
-      const loaded = await settingsService.getByKeys(keys);
+      const loaded = await settingsService.getByKeys(keys) as Partial<SettingsData>;
       
       setSettings(prev => {
-        const updated = { ...prev };
-        keys.forEach(key => {
-          if (loaded[key] !== undefined && loaded[key] !== null) {
-            updated[key] = loaded[key] as any;
+        const updated: SettingsData = { ...prev };
+        for (const key of keys) {
+          const typedKey = key as keyof SettingsData;
+          const value = loaded[typedKey];
+          if (value !== undefined && value !== null) {
+            (updated as any)[typedKey] = value;
           }
-        });
+        }
         return updated;
       });
     } catch (error) {
       console.error('Error loading settings:', error);
+      setError('Unable to load settings. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  const inferType = (value: SettingsData[keyof SettingsData]): 'boolean' | 'number' | 'string' => {
+    if (typeof value === 'boolean') return 'boolean';
+    if (typeof value === 'number' && !Number.isNaN(value)) return 'number';
+    return 'string';
+  };
+
   const handleSave = async () => {
     setSaving(true);
+    setError('');
+    setSuccess('');
     try {
       const settingsArray = Object.entries(settings).map(([key, value]) => ({
         key,
         value,
-        type: typeof value === 'boolean' ? 'boolean' : typeof value === 'number' ? 'number' : 'string',
+        type: inferType(value as SettingsData[keyof SettingsData]),
       }));
 
       await settingsService.bulkUpdate(settingsArray);
-      alert('Settings saved successfully!');
+      setSuccess('Settings saved successfully.');
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Error saving settings');
+      setError(error.response?.data?.message || 'Error saving settings. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -81,6 +96,8 @@ export const SettingsPage: React.FC = () => {
 
   const updateSetting = <K extends keyof SettingsData>(key: K, value: SettingsData[K]) => {
     setSettings(prev => ({ ...prev, [key]: value }));
+    setSuccess('');
+    setError('');
   };
 
   if (loading) {
@@ -91,9 +108,16 @@ export const SettingsPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Settings</h1>
-        <Button onClick={handleSave} isLoading={saving} variant="primary">
+        <div className="flex items-center gap-3">
+          {success && <span className="text-green-700 text-sm">{success}</span>}
+          {error && <span className="text-red-600 text-sm">{error}</span>}
+          <Button onClick={loadSettings} variant="outline" disabled={loading || saving}>
+            Reset
+          </Button>
+          <Button onClick={handleSave} isLoading={saving} variant="primary" disabled={saving || loading || !!error}>
           Save All Settings
         </Button>
+        </div>
       </div>
 
       {/* 1. Inventory Control Settings */}
