@@ -66,6 +66,9 @@ Route::get('/reports/credit-sales', [ReportController::class, 'creditSales']);
         Route::get('/stalls', [CanteenController::class, 'getStalls']);
         Route::post('/stalls', [CanteenController::class, 'storeStall']);
 
+        Route::put('/stalls/{id}', [CanteenController::class, 'updateStall']);
+        Route::delete('/stalls/{id}', [CanteenController::class, 'destroyStall']);
+
         // Tenants
         Route::post('/tenants', [CanteenController::class, 'storeTenant']);
 

@@ -87,4 +87,31 @@ class CanteenController extends Controller
 
         return response()->json(['message' => 'Payment recorded', 'bill' => $bill]);
     }
+
+    public function updateStall(Request $request, $id) {
+        $stall = CanteenStall::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'location' => 'required|string',
+            'monthly_rent' => 'required|numeric',
+        ]);
+
+        $stall->update($validated);
+    
+        return response()->json($stall);
+    }
+
+    public function destroyStall($id) {
+        $stall = CanteenStall::findOrFail($id);
+    
+        // Optional: Check if stall has an active tenant before deleting
+        if ($stall->status === 'occupied') {
+            return response()->json(['message' => 'Cannot delete an occupied stall.'], 400);
+        }
+
+        $stall->delete();
+    
+        return response()->json(['message' => 'Stall deleted successfully']);
+    }
 }

@@ -145,7 +145,10 @@ export const DashboardPage: React.FC = () => {
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip
-                formatter={(value: number) => formatCurrency(value)}
+                formatter={(value) => {
+                  if (value == null) return formatCurrency(0);
+                  return formatCurrency(Number(value));
+                }}
                 contentStyle={{ backgroundColor: 'white', border: '1px solid #ccc' }}
               />
               <Legend />
@@ -175,7 +178,10 @@ export const DashboardPage: React.FC = () => {
               <XAxis dataKey="category" />
               <YAxis />
               <Tooltip
-                formatter={(value: number) => formatCurrency(value)}
+                formatter={(value) => {
+                  if (value == null) return formatCurrency(0);
+                  return formatCurrency(Number(value));
+                }}
                 contentStyle={{ backgroundColor: 'white', border: '1px solid #ccc' }}
               />
               <Legend />
@@ -194,12 +200,12 @@ export const DashboardPage: React.FC = () => {
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+              label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
               outerRadius={100}
               fill="#8884d8"
               dataKey="value"
             >
-              {data?.customer_type_distribution.map((entry, index) => (
+              {data?.customer_type_distribution.map((_entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>

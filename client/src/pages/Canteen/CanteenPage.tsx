@@ -84,15 +84,26 @@ export const CanteenPage: React.FC = () => {
     }, [stalls, bills]);
 
     // --- HANDLERS ---
-    const handleAddStall = async (e: React.FormEvent) => {
+    const handleSaveStall = async (e: React.FormEvent) => {
         e.preventDefault();
         setActionLoading(true);
         try {
-            await canteenService.createStall(newStall);
+            if (selectedStall) {
+                // FIX: If selectedStall exists, we call UPDATE, not CREATE
+                await canteenService.updateStall(selectedStall.id, newStall);
+            } else {
+                // ADD LOGIC
+                await canteenService.createStall(newStall);
+            }
             setIsStallModalOpen(false);
+            setSelectedStall(null); // IMPORTANT: Reset to null so next click is "Add"
             setNewStall({ name: '', location: 'Main Canteen', monthly_rent: '' });
             fetchData();
-        } catch (error) { alert("Error adding stall."); } finally { setActionLoading(false); }
+        } catch (error) {
+            alert("Error saving stall.");
+        } finally {
+            setActionLoading(false);
+        }
     };
 
     const handleAssignTenant = async (e: React.FormEvent) => {
@@ -127,6 +138,32 @@ export const CanteenPage: React.FC = () => {
             setActionLoading(false);
         }
     };
+
+
+
+    const handleDeleteStall = async (id: number) => {
+        if (!confirm("Are you sure you want to delete this stall? All related data may be lost.")) return;
+        setActionLoading(true);
+        try {
+            await canteenService.deleteStall(id); // Ensure this exists in your canteenService
+            fetchData();
+        } catch (error) {
+            alert("Error deleting stall.");
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleEditStall = (stall: Stall) => {
+        setSelectedStall(stall);
+        setNewStall({
+            name: stall.name,
+            location: stall.location,
+            monthly_rent: stall.monthly_rent.toString()
+        });
+        setIsStallModalOpen(true);
+    };
+
 
     if (loading) return <div className="p-10 text-center text-gray-500">Loading Canteen Module...</div>;
 
@@ -262,6 +299,8 @@ export const CanteenPage: React.FC = () => {
                                     key={stall.id}
                                     stall={stall}
                                     onAssign={() => { setSelectedStall(stall); setIsTenantModalOpen(true); }}
+                                    onEdit={() => handleEditStall(stall)}
+                                    onDelete={() => handleDeleteStall(stall.id)}
                                 />
                             ))}
                         </div>
@@ -334,10 +373,14 @@ export const CanteenPage: React.FC = () => {
             {/* MODALS (Stall, Tenant, Receipt) */}
             <Modal
                 isOpen={isStallModalOpen}
-                onClose={() => setIsStallModalOpen(false)}
-                title="Add New Canteen Stall"
+                onClose={() => {
+                    setIsStallModalOpen(false);
+                    setSelectedStall(null);
+                    setNewStall({ name: '', location: 'Main Canteen', monthly_rent: '' });
+                }}
+                title={selectedStall ? "Edit Canteen Stall" : "Add New Canteen Stall"}
             >
-                <form onSubmit={handleAddStall} className="space-y-4">
+                <form onSubmit={handleSaveStall} className="space-y-4">
                     <Input
                         label="Stall Name"
                         placeholder="e.g. Stall 01"
@@ -361,8 +404,13 @@ export const CanteenPage: React.FC = () => {
                         required
                     />
                     <div className="flex justify-end space-x-2 pt-4">
-                        <Button variant="outline" onClick={() => setIsStallModalOpen(false)}>Cancel</Button>
-                        <Button type="submit" isLoading={actionLoading}>Save Stall</Button>
+                        <Button variant="outline" type='button' onClick={() => {
+                            setIsStallModalOpen(false);
+                            setSelectedStall(null);
+                        }}>Cancel</Button>
+                        <Button type="submit" isLoading={actionLoading}>
+                            {selectedStall ? "Update Stall" : "Save Stall"}
+                        </Button>
                     </div>
                 </form>
             </Modal>
@@ -460,10 +508,17 @@ const DashboardCard = ({ title, value, icon, color }: any) => (
     </div>
 );
 
-const StallCard = ({ stall, onAssign }: { stall: Stall, onAssign: () => void }) => (
+const StallCard = ({ stall, onAssign, onEdit, onDelete }: any) => (
     <div className="bg-white border rounded-xl p-5 shadow-sm relative overflow-hidden transition-hover hover:shadow-md">
-        <div className={`absolute top-0 right-0 px-3 py-1 text-[10px] font-black rounded-bl-lg ${stall.status === 'occupied' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'}`}>
-            {stall.status.toUpperCase()}
+        <div className="absolute top-2 right-2 flex space-x-1">
+            {/* Edit Button */}
+            <button onClick={onEdit} className="p-1.5 bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600 rounded-md transition">
+                ✏️
+            </button>
+            {/* Delete Button */}
+            <button onClick={onDelete} className="p-1.5 bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 rounded-md transition">
+                🗑️
+            </button>
         </div>
         <h3 className="font-bold text-lg text-gray-800">{stall.name}</h3>
         <p className="text-xs text-gray-400 mb-3">{stall.location}</p>
@@ -480,3 +535,5 @@ const StallCard = ({ stall, onAssign }: { stall: Stall, onAssign: () => void }) 
         </div>
     </div>
 );
+
+

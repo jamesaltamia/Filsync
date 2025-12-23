@@ -28,15 +28,15 @@ export const ForgotPasswordPage: React.FC = () => {
       setSuccess(response.message);
       setOtpFromServer(response.otp || null);
       setStep('reset');
-      
+
       // Show OTP in development (remove in production)
       if (response.otp) {
         setSuccess(`Password reset code sent! (Dev mode: ${response.otp})`);
       }
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.errors?.[Object.keys(err.response?.data?.errors || {})[0]]?.[0] ||
-                          'Failed to send reset code. Please try again.';
+      const errorMessage = err.response?.data?.message ||
+        err.response?.data?.errors?.[Object.keys(err.response?.data?.errors || {})[0]]?.[0] ||
+        'Failed to send reset code. Please try again.';
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -72,9 +72,9 @@ export const ForgotPasswordPage: React.FC = () => {
         navigate('/login');
       }, 2000);
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.errors?.[Object.keys(err.response?.data?.errors || {})[0]]?.[0] ||
-                          'Failed to reset password. Please try again.';
+      const errorMessage = err.response?.data?.message ||
+        err.response?.data?.errors?.[Object.keys(err.response?.data?.errors || {})[0]]?.[0] ||
+        'Failed to reset password. Please try again.';
       setError(errorMessage);
     } finally {
       setLoading(false);

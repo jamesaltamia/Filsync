@@ -12,6 +12,16 @@ export const canteenService = {
         return response.data;
     },
 
+    updateStall: async (id: number, data: any) => {
+        const response = await api.put(`/canteen/stalls/${id}`, data);
+        return response.data;
+    },
+
+    deleteStall: async (id: number) => {
+        const response = await api.delete(`/canteen/stalls/${id}`);
+        return response.data;
+    },
+
     // Tenants
     createTenant: async (data: any): Promise<Tenant> => {
         const response = await api.post('/canteen/tenants', data);
