@@ -39,11 +39,8 @@ export const OrdersHistoryPage: React.FC = () => {
   };
 
   const handlePrintReceipt = (order: Order) => {
-    // Ensure cash and change are included on receipt if available
-    const cash =
-      order.cash_tendered != null ? Number(order.cash_tendered) : undefined;
-    const change =
-      order.change_due != null ? Number(order.change_due) : undefined;
+    const cash = order.cash_tendered != null ? Number(order.cash_tendered) : undefined;
+    const change = order.change_due != null ? Number(order.change_due) : undefined;
 
     printReceipt({
       ...order,
@@ -53,62 +50,84 @@ export const OrdersHistoryPage: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-12">Loading...</div>;
+    return <div className="text-center py-12 italic text-gray-500">Loading history...</div>;
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Orders History</h1>
-
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order #</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {orders.map((order) => (
-              <tr key={order.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{order.order_number}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {order.customer
-                    ? `${order.customer.first_name} ${order.customer.last_name}`
-                    : 'Walk-in'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap font-medium">
-                  {formatCurrency(order.total)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {new Date(order.created_at).toLocaleString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap space-x-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleViewDetails(order.id)}
-                  >
-                    View
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => handlePrintReceipt(order)}
-                  >
-                    Print
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="flex flex-col h-[calc(100vh-160px)] space-y-4">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-slate-800">Orders History</h1>
       </div>
 
-      {/* Order Details Modal */}
+      {/* SCROLLABLE TABLE CONTAINER */}
+      <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden">
+        <div className="overflow-y-auto flex-1">
+          <table className="min-w-full divide-y divide-gray-200 table-auto">
+            <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Order #</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Customer</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Total</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-100">
+              {orders.length > 0 ? (
+                orders.map((order) => (
+                  <tr key={order.id} className="hover:bg-blue-50/30 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap font-medium text-blue-700">#{order.order_number}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                      {order.customer
+                        ? `${order.customer.first_name} ${order.customer.last_name}`
+                        : <span className="text-gray-400 italic">Walk-in</span>}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap font-bold text-slate-900">
+                      {formatCurrency(order.total)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(order.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center space-x-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleViewDetails(order.id)}
+                      >
+                        View
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="bg-slate-800 hover:bg-slate-900 text-white"
+                        onClick={() => handlePrintReceipt(order)}
+                      >
+                        Print
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="px-6 py-10 text-center text-gray-400 italic">
+                    No orders found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* FOOTER / PAGINATION BAR */}
+        <div className="bg-gray-50 border-t border-gray-200 px-6 py-3 flex justify-between items-center text-sm text-gray-500">
+          <span>Showing {orders.length} orders</span>
+          <div className="flex gap-2">
+            <button className="px-3 py-1 border rounded bg-white hover:bg-gray-50 disabled:opacity-50">Previous</button>
+            <button className="px-3 py-1 border rounded bg-white hover:bg-gray-50 disabled:opacity-50">Next</button>
+          </div>
+        </div>
+      </div>
+
+      {/* Order Details Modal remains the same */}
       <Modal
         isOpen={showDetailsModal}
         onClose={() => {
@@ -120,28 +139,28 @@ export const OrdersHistoryPage: React.FC = () => {
       >
         {selectedOrder && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 bg-blue-50/50 p-4 rounded-lg">
               <div>
-                <p className="text-sm text-gray-600">Order Number</p>
-                <p className="font-medium">{selectedOrder.order_number}</p>
+                <p className="text-xs text-blue-600 font-bold uppercase">Order Number</p>
+                <p className="font-bold text-lg text-blue-900">#{selectedOrder.order_number}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Date</p>
-                <p className="font-medium">
+                <p className="text-xs text-blue-600 font-bold uppercase">Date & Time</p>
+                <p className="font-medium text-gray-800">
                   {new Date(selectedOrder.created_at).toLocaleString()}
                 </p>
               </div>
               {selectedOrder.customer && (
                 <>
-                  <div>
-                    <p className="text-sm text-gray-600">Customer</p>
+                  <div className="border-t border-blue-100 pt-2">
+                    <p className="text-xs text-blue-600 font-bold uppercase">Customer</p>
                     <p className="font-medium">
                       {selectedOrder.customer.first_name} {selectedOrder.customer.last_name}
                     </p>
                   </div>
                   {selectedOrder.customer.student_id && (
-                    <div>
-                      <p className="text-sm text-gray-600">Student ID</p>
+                    <div className="border-t border-blue-100 pt-2">
+                      <p className="text-xs text-blue-600 font-bold uppercase">Student ID</p>
                       <p className="font-medium">{selectedOrder.customer.student_id}</p>
                     </div>
                   )}
@@ -149,53 +168,58 @@ export const OrdersHistoryPage: React.FC = () => {
               )}
             </div>
 
-            <div className="border-t pt-4">
-              <h3 className="font-semibold mb-2">Items</h3>
-              <div className="space-y-2">
+            <div className="pt-2">
+              <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
+                📦 Purchased Items
+              </h3>
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
                 {selectedOrder.items?.map((item) => (
-                  <div key={item.id} className="flex justify-between p-2 bg-gray-50 rounded">
+                  <div key={item.id} className="flex justify-between p-3 bg-white border border-gray-100 rounded-lg shadow-sm">
                     <div>
-                      <p className="font-medium">
+                      <p className="font-bold text-slate-800">
                         {item.product?.name}
-                        {item.product?.size && <span className="text-gray-600 font-normal"> ({item.product.size})</span>}
+                        {item.product?.size && <span className="text-blue-600 font-normal ml-1">[{item.product.size}]</span>}
                       </p>
-                      <p className="text-sm text-gray-600">
-                        {item.quantity} x {formatCurrency(item.price)}
+                      <p className="text-xs text-gray-500">
+                        {item.quantity} units @ {formatCurrency(item.price)}
                       </p>
                     </div>
-                    <p className="font-medium">{formatCurrency(item.subtotal)}</p>
+                    <p className="font-bold text-slate-900">{formatCurrency(item.subtotal)}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="border-t pt-4 space-y-2">
-              <div className="flex justify-between">
-                <span>Subtotal:</span>
+            <div className="border-t-2 border-dashed pt-4 space-y-2">
+              <div className="flex justify-between text-gray-600">
+                <span>Subtotal</span>
                 <span>{formatCurrency(selectedOrder.subtotal)}</span>
               </div>
 
               {selectedOrder.cash_tendered != null && (
                 <>
-                  <div className="flex justify-between">
-                    <span>Cash:</span>
+                  <div className="flex justify-between text-gray-600 italic">
+                    <span>Cash Tendered</span>
                     <span>{formatCurrency(Number(selectedOrder.cash_tendered))}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Change:</span>
+                  <div className="flex justify-between text-gray-600 italic">
+                    <span>Change Due</span>
                     <span>{formatCurrency(Number(selectedOrder.change_due ?? 0))}</span>
                   </div>
                 </>
               )}
 
-              <div className="flex justify-between font-bold text-lg text-green-600 border-t pt-2">
-                <span>Total:</span>
+              <div className="flex justify-between font-black text-xl text-green-700 border-t pt-2">
+                <span>TOTAL PAID</span>
                 <span>{formatCurrency(selectedOrder.total)}</span>
               </div>
             </div>
 
-            <div className="flex justify-end">
-              <Button onClick={() => handlePrintReceipt(selectedOrder)}>
+            <div className="flex justify-end pt-4">
+              <Button
+                className="w-full sm:w-auto bg-[#0a318e] hover:bg-[#1e4eba]"
+                onClick={() => handlePrintReceipt(selectedOrder)}
+              >
                 Print Receipt
               </Button>
             </div>
@@ -205,4 +229,3 @@ export const OrdersHistoryPage: React.FC = () => {
     </div>
   );
 };
-

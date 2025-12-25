@@ -35,18 +35,17 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-[#f3f4f6] flex font-sans">
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 w-64 bg-blue-800 text-white flex flex-col shadow-xl z-20">
-        <div className="flex items-center justify-center h-20 bg-blue-800 space-x-3 border-b border-slate-800">
+      <div className="fixed inset-y-0 left-0 w-64 bg-[#0a318e] text-white flex flex-col shadow-2xl z-20">
+        <div className="flex items-center px-6 h-16 bg-[#0a318e] space-x-3 border-b border-white/10">
           <motion.img
             whileHover={{ rotate: 360 }}
             transition={{ duration: 0.7 }}
             src={LogoImg}
             alt="Logo"
-            className="w-10 h-10 object-contain"
-          />
-          <h1 className="text-xl font-extrabold tracking-tight">FilSync <span className="text-blue-200">POS</span></h1>
+            className="w-10 h-10 object-contain brightness-110 shadow-sm" />
+          <h1 className="text-xl font-bold tracking-tight">FilSync <span className="text-blue-300">POS</span></h1>
         </div>
 
         <nav className="mt-6 flex-1 px-3 space-y-1">
@@ -60,9 +59,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               >
                 <Link
                   to={item.path}
-                  className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 group ${isActive
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
-                    : 'text-slate-400 hover:bg-blue-500 hover:text-white'
+                  className={`flex items-center px-4 py-3 rounded-md transition-all duration-200 group ${isActive
+                    ? 'bg-[#1e4eba] text-white shadow-md border-l-4 border-yellow-400'
+                    : 'text-blue-100 hover:bg-white/10 hover:text-white'
                     }`}
                 >
                   <span className={`mr-3 text-xl transition-transform duration-200 ${!isActive && 'group-hover:scale-120'}`}>
@@ -79,6 +78,36 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               </motion.div>
             );
           })}
+
+          <div className="my-4 border-t border-blue-600 mx-6"></div>
+
+          {/* Settings */}
+          {user?.role === 'admin' && (
+            <motion.div
+              whileHover={{ x: 5 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Link
+                to="/settings"
+                className={`flex items-center px-4 py-3 mx-3 rounded-lg transition-all duration-200 group ${location.pathname === '/settings'
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
+                  : 'text-slate-400 hover:bg-blue-500 hover:text-white'
+                  }`}
+              >
+                <span className={`mr-3 text-xl transition-transform duration-200 ${location.pathname !== '/settings' && 'group-hover:scale-110'
+                  }`}>
+                  ⚙️
+                </span>
+                <span className="font-medium">Settings</span>
+                {location.pathname === '/settings' && (
+                  <motion.div
+                    layoutId="activePill"
+                    className="ml-auto w-1.5 h-1.5 rounded-full bg-green-400"
+                  />
+                )}
+              </Link>
+            </motion.div>
+          )}
         </nav>
 
         {/* Logout Button with hover effect */}
@@ -95,25 +124,27 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 ml-64">
-        <header className="bg-white/80 backdrop-blur-md sticky top-0 border-b border-gray-200 h-16 flex items-center justify-between px-8 z-10">
-          <h2 className="text-lg font-bold text-slate-800">
-            {navigation.find((item) => item.path === location.pathname)?.name || 'Dashboard'}
-          </h2>
+      <div className="flex-1 ml-64 flex flex-col">
+        {/* Header - Matching FCU Portal White/Blue contrast */}
+        <header className="bg-[#0a318e] border-b border-gray-200 h-16 flex items-center justify-between px-8 sticky top-0 z-10 shadow-sm">
+          <div className="flex items-baseline space-x-2">
+            <h2 className="text-xl font-bold text-white">
+              {navigation.find((item) => item.path === location.pathname)?.name || 'Dashboard'}
+            </h2>
+          </div>
 
-          <div className="flex items-center space-x-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold text-slate-900 leading-none">{user?.name}</p>
-              <p className="text-xs text-slate-500 mt-1">{user?.email}</p>
+          <div className="flex items-center space-x-6">
+            <div className="text-right border-r pr-4 border-gray-100">
+              <p className="text-[13px] font-bold text-white uppercase tracking-tight">{user?.name}</p>
+              <p className="text-[11px] text-white font-medium">{user?.email}</p>
             </div>
-            <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-white shadow-md ${user?.role === 'admin' ? 'bg-indigo-500' : 'bg-emerald-500'
-              }`}>
+            <div className="h-9 w-9 rounded-full flex items-center justify-center font-bold text-white shadow-md bg-grey-100 ring-2 ring-blue-50">
               {user?.name?.charAt(0).toUpperCase()}
             </div>
           </div>
         </header>
 
-        <main className="p-8">
+        <main className="p-8 verflow-auto">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

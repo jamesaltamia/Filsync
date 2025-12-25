@@ -269,7 +269,7 @@ export const ReportsPage: React.FC = () => {
       )}
 
       {reportType === 'items' && itemSales.length > 0 && (
-        <div ref={printRef}>
+        <div ref={printRef} className="space-y-6">
           {/* Print Header */}
           <div className="hidden print:block mb-6 text-center">
             <h1 className="text-3xl font-bold mb-2">FilSync POS</h1>
@@ -299,40 +299,47 @@ export const ReportsPage: React.FC = () => {
           </div>
 
           <Card title="Item Sales Report">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity Sold</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {itemSales.map((item, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
-                      <td className="px-6 py-4 whitespace-nowrap font-medium">{item.product.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{item.product.category?.name || 'N/A'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">{item.total_quantity}</td>
-                      <td className="px-6 py-4 whitespace-nowrap font-semibold text-green-600">
-                        {formatCurrency(item.total_revenue)}
-                      </td>
+            <div className="flex flex-col border border-gray-200 rounded-lg overflow-hidden">
+              {/* Scrollable Container */}
+              <div className="overflow-y-auto max-h-[400px]"> {/* Adjust height as needed */}
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50 sticky top-0 z-10"> {/* Sticky Header */}
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase text-center">Qty Sold</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
                     </tr>
-                  ))}
-                  <tr className="bg-gray-100 font-bold">
-                    <td colSpan={3} className="px-6 py-4 text-right">TOTAL:</td>
-                    <td className="px-6 py-4 text-center">
-                      {itemSales.reduce((sum, item) => sum + Number(item.total_quantity || 0), 0)}
-                    </td>
-                    <td className="px-6 py-4 text-green-600">
-                      {formatCurrency(itemSales.reduce((sum, item) => sum + Number(item.total_revenue || 0), 0))}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {itemSales.map((item, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
+                        <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-800">{item.product.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-600">{item.product.category?.name || 'N/A'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center font-medium">{item.total_quantity}</td>
+                        <td className="px-6 py-4 whitespace-nowrap font-semibold text-green-600">
+                          {formatCurrency(item.total_revenue)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Sticky Total Row */}
+              <div className="bg-gray-100 border-t border-gray-300 px-6 py-4 z-20">
+                <div className="flex justify-between items-center text-sm font-bold text-slate-900">
+                  <div className="flex-1 text-right pr-[22%]">TOTAL:</div>
+                  <div className="w-24 text-center">
+                    {itemSales.reduce((sum, item) => sum + Number(item.total_quantity || 0), 0)}
+                  </div>
+                  <div className="w-32 text-right text-green-600">
+                    {formatCurrency(itemSales.reduce((sum, item) => sum + Number(item.total_revenue || 0), 0))}
+                  </div>
+                </div>
+              </div>
             </div>
           </Card>
         </div>

@@ -42,7 +42,7 @@ interface DashboardData {
   }>;
 }
 
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+const COLORS = ['#141fc7ff', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 export const DashboardPage: React.FC = () => {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -155,7 +155,7 @@ export const DashboardPage: React.FC = () => {
               <Line
                 type="monotone"
                 dataKey="revenue"
-                stroke="#3B82F6"
+                stroke="#141fc7ff"
                 strokeWidth={2}
                 name="Revenue"
               />
