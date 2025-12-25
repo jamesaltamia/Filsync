@@ -185,7 +185,7 @@ export const DashboardPage: React.FC = () => {
                 contentStyle={{ backgroundColor: 'white', border: '1px solid #ccc' }}
               />
               <Legend />
-              <Bar dataKey="total" fill="#10B981" name="Total Sales" />
+              <Bar dataKey="total" fill="#141fc7ff" name="Total Sales" />
             </BarChart>
           </ResponsiveContainer>
         </Card>

@@ -256,10 +256,11 @@ export const CanteenPage: React.FC = () => {
                                             <XAxis dataKey="stall" fontSize={11} />
                                             <YAxis fontSize={12} />
                                             <Tooltip formatter={(v) => formatCurrency(Number(v))} />
-                                            <Bar dataKey="total" fill="#10b981" radius={[4, 4, 0, 0]} />
+                                            <Bar dataKey="total" fill="#141fc7ff" radius={[4, 4, 0, 0]} />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
+
                             </div>
 
                             {/* Pending Payments List */}
