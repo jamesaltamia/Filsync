@@ -23,7 +23,6 @@ export const CustomersPage: React.FC = () => {
     last_name: '',
     year_level: '',
     course: '',
-    phone: '',
     type: 'student' as const,
   });
 
@@ -32,7 +31,6 @@ export const CustomersPage: React.FC = () => {
     first_name: '',
     last_name: '',
     department: '',
-    phone: '',
     type: 'teacher' as const,
   });
 
@@ -74,9 +72,9 @@ export const CustomersPage: React.FC = () => {
       setSelectedCustomer(null);
       fetchCustomers();
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error || 
-                          `Error ${isEditMode ? 'updating' : 'creating'} customer`;
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        `Error ${isEditMode ? 'updating' : 'creating'} customer`;
       alert(errorMessage);
     } finally {
       setLoading(false);
@@ -92,7 +90,6 @@ export const CustomersPage: React.FC = () => {
         last_name: customer.last_name,
         year_level: customer.year_level || '',
         course: customer.course || '',
-        phone: customer.phone || '',
         type: 'student',
       });
       setIsEditMode(true);
@@ -103,7 +100,6 @@ export const CustomersPage: React.FC = () => {
         first_name: customer.first_name,
         last_name: customer.last_name,
         department: customer.department || '',
-        phone: customer.phone || '',
         type: 'teacher',
       });
       setIsEditMode(true);
@@ -122,9 +118,9 @@ export const CustomersPage: React.FC = () => {
       fetchCustomers();
       alert('Customer deleted successfully');
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error || 
-                          'Error deleting customer';
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        'Error deleting customer';
       alert(errorMessage);
     } finally {
       setLoading(false);
@@ -158,7 +154,6 @@ export const CustomersPage: React.FC = () => {
       last_name: '',
       year_level: '',
       course: '',
-      phone: '',
       type: 'student',
     });
     setIsEditMode(false);
@@ -171,7 +166,6 @@ export const CustomersPage: React.FC = () => {
       first_name: '',
       last_name: '',
       department: '',
-      phone: '',
       type: 'teacher',
     });
     setIsEditMode(false);
@@ -256,7 +250,7 @@ export const CustomersPage: React.FC = () => {
           </tbody>
         </table>
       </div>
-      
+
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold"></h1>
         <div className="flex space-x-2">
@@ -361,11 +355,6 @@ export const CustomersPage: React.FC = () => {
             value={studentForm.course}
             onChange={(e) => setStudentForm({ ...studentForm, course: e.target.value })}
           />
-          <Input
-            label="Phone"
-            value={studentForm.phone}
-            onChange={(e) => setStudentForm({ ...studentForm, phone: e.target.value })}
-          />
           <div className="flex justify-end space-x-2">
             <Button
               variant="outline"
@@ -414,11 +403,6 @@ export const CustomersPage: React.FC = () => {
             label="Department"
             value={teacherForm.department}
             onChange={(e) => setTeacherForm({ ...teacherForm, department: e.target.value })}
-          />
-          <Input
-            label="Phone"
-            value={teacherForm.phone}
-            onChange={(e) => setTeacherForm({ ...teacherForm, phone: e.target.value })}
           />
           <div className="flex justify-end space-x-2">
             <Button

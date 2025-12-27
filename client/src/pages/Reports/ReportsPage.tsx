@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { reportService } from '../../services/reportService';
 import { canteenService } from '../../services/canteenService';
 import { orderService } from '../../services/orderService';
@@ -8,7 +8,11 @@ import { formatCurrency } from '../../utils/formatCurrency';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 
+// CONSTANTS
+const CANTEEN_LOCATIONS = ['Main Canteen', 'High School Canteen'];
+
 export const ReportsPage: React.FC = () => {
+  // --- STATES ---
   const [reportType, setReportType] =
     useState<'daily' | 'monthly' | 'yearly' | 'items' | 'credit' | 'canteen'>('daily');
 
@@ -17,6 +21,9 @@ export const ReportsPage: React.FC = () => {
   const [creditSales, setCreditSales] = useState<CreditSale[]>([]);
   const [canteenBills, setCanteenBills] = useState<Bill[]>([]);
 
+  // NEW: Filter State for Canteen
+  const [filterLocation, setFilterLocation] = useState<string>('All');
+
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
@@ -24,67 +31,43 @@ export const ReportsPage: React.FC = () => {
 
   const printRef = useRef<HTMLDivElement>(null);
 
-  /* ---------------- RESET DATA ON TAB CHANGE ---------------- */
   useEffect(() => {
     setDailyData(null);
     setItemSales([]);
     setCreditSales([]);
     setCanteenBills([]);
+    setFilterLocation('All'); // Reset filter on tab change
   }, [reportType]);
 
-  /* ---------------- FETCHERS ---------------- */
+  /* ---------------- DATA FETCHING ---------------- */
   const fetchDaily = async () => {
     setLoading(true);
-    try {
-      setDailyData(await reportService.getDailySales(date));
-    } finally {
-      setLoading(false);
-    }
+    try { setDailyData(await reportService.getDailySales(date)); } finally { setLoading(false); }
   };
 
   const fetchMonthly = async () => {
     setLoading(true);
-    try {
-      setDailyData(await reportService.getMonthlySales(year, month));
-    } finally {
-      setLoading(false);
-    }
+    try { setDailyData(await reportService.getMonthlySales(year, month)); } finally { setLoading(false); }
   };
 
   const fetchYearly = async () => {
     setLoading(true);
-    try {
-      setDailyData(await reportService.getYearlySales(year));
-    } finally {
-      setLoading(false);
-    }
+    try { setDailyData(await reportService.getYearlySales(year)); } finally { setLoading(false); }
   };
 
   const fetchItems = async () => {
     setLoading(true);
-    try {
-      setItemSales(await reportService.getItemSales());
-    } finally {
-      setLoading(false);
-    }
+    try { setItemSales(await reportService.getItemSales()); } finally { setLoading(false); }
   };
 
   const fetchCreditSales = async () => {
     setLoading(true);
-    try {
-      setCreditSales(await reportService.getCreditSales());
-    } finally {
-      setLoading(false);
-    }
+    try { setCreditSales(await reportService.getCreditSales()); } finally { setLoading(false); }
   };
 
   const fetchCanteen = async () => {
     setLoading(true);
-    try {
-      setCanteenBills(await canteenService.getBills());
-    } finally {
-      setLoading(false);
-    }
+    try { setCanteenBills(await canteenService.getBills()); } finally { setLoading(false); }
   };
 
   const handleGenerateReport = () => {
@@ -97,6 +80,14 @@ export const ReportsPage: React.FC = () => {
   };
 
   const handlePrint = () => window.print();
+
+  // --- COMPUTED DATA (Filtering) ---
+  const filteredCanteenBills = useMemo(() => {
+    if (reportType !== 'canteen') return [];
+    if (filterLocation === 'All') return canteenBills;
+    // Filter based on the bill's stall location
+    return canteenBills.filter(b => b.tenant?.stall?.location === filterLocation);
+  }, [canteenBills, filterLocation, reportType]);
 
   /* ---------------- EXPORT CSV ---------------- */
   const handleExportCSV = () => {
@@ -120,11 +111,12 @@ export const ReportsPage: React.FC = () => {
     }
 
     else if (reportType === 'canteen') {
-      csv = 'Tenant,Stall,Month,Status,Amount\n';
-      canteenBills.forEach(b => {
-        csv += `"${b.tenant?.name}","${b.tenant?.stall?.name}","${b.month_year}","${b.status}",${b.amount}\n`;
+      // UPDATED: Use filteredCanteenBills here
+      csv = 'Tenant,Stall,Location,Month,Status,Amount\n';
+      filteredCanteenBills.forEach(b => {
+        csv += `"${b.tenant?.name}","${b.tenant?.stall?.name}","${b.tenant?.stall?.location}","${b.month_year}","${b.status}",${b.amount}\n`;
       });
-      filename = 'canteen-report.csv';
+      filename = `canteen-report-${filterLocation === 'All' ? 'all' : filterLocation.toLowerCase().replace(/\s/g, '-')}.csv`;
     }
 
     else if (dailyData) {
@@ -149,30 +141,14 @@ export const ReportsPage: React.FC = () => {
     canteenBills.length > 0;
 
   const getReportTitle = () => {
-    if (reportType === 'daily') {
-      return `Daily Sales Report - ${date}`;
-    }
-
-    if (reportType === 'monthly') {
-      return `Monthly Sales Report - ${new Date(
-        year,
-        month - 1
-      ).toLocaleString('default', { month: 'long', year: 'numeric' })}`;
-    }
-
-    if (reportType === 'yearly') {
-      return `Yearly Sales Report - ${year}`;
-    }
-
-    if (reportType === 'items') {
-      return 'Item Sales Report';
-    }
-
-    if (reportType === 'credit') {
-      return 'Credit Sales Report (Teachers)';
-    }
-
-    return 'Canteen Revenue Report';
+    if (reportType === 'daily') return `Daily Sales Report - ${date}`;
+    if (reportType === 'monthly') return `Monthly Sales Report - ${new Date(year, month - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}`;
+    if (reportType === 'yearly') return `Yearly Sales Report - ${year}`;
+    if (reportType === 'items') return 'Item Sales Report';
+    if (reportType === 'credit') return 'Credit Sales Report (Teachers)';
+    // UPDATED Title
+    if (reportType === 'canteen') return `Canteen Report (${filterLocation})`;
+    return 'Report';
   };
 
   /* ---------------- UI ---------------- */
@@ -196,49 +172,66 @@ export const ReportsPage: React.FC = () => {
             <button
               key={t}
               onClick={() => setReportType(t as any)}
-              className={`px-4 py-2 rounded-lg ${reportType === t ? 'bg-green-600 text-white' : 'bg-gray-200'
-                }`}
+              className={`px-4 py-2 rounded-lg ${reportType === t ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
             >
               {t === 'items' ? 'Item Sales' :
                 t === 'credit' ? 'Credit Sales (Teachers)' :
-                  t === 'canteen' ? 'Canteen' : t}
+                  t === 'canteen' ? 'Canteen' :
+                    t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
         </div>
 
-        {reportType === 'daily' && (
-          <input type="date" value={date} onChange={e => setDate(e.target.value)}
-            className="border px-4 py-2 rounded-lg" />
-        )}
-
-        {(reportType === 'monthly' || reportType === 'yearly') && (
-          <div className="flex gap-2">
-            <input type="number" value={year} onChange={e => setYear(+e.target.value)}
+        <div className="flex flex-wrap gap-4 items-end">
+          {reportType === 'daily' && (
+            <input type="date" value={date} onChange={e => setDate(e.target.value)}
               className="border px-4 py-2 rounded-lg" />
-            {reportType === 'monthly' && (
-              <input type="number" min={1} max={12} value={month}
-                onChange={e => setMonth(+e.target.value)}
-                className="border px-4 py-2 rounded-lg" />
-            )}
-          </div>
-        )}
+          )}
 
-        <Button onClick={handleGenerateReport} isLoading={loading} className="mt-4">
-          Generate Report
-        </Button>
+          {(reportType === 'monthly' || reportType === 'yearly') && (
+            <div className="flex gap-2">
+              <input type="number" value={year} onChange={e => setYear(+e.target.value)}
+                className="border px-4 py-2 rounded-lg" />
+              {reportType === 'monthly' && (
+                <input type="number" min={1} max={12} value={month}
+                  onChange={e => setMonth(+e.target.value)}
+                  className="border px-4 py-2 rounded-lg" />
+              )}
+            </div>
+          )}
+
+          {/* NEW: Canteen Location Filter */}
+          {reportType === 'canteen' && (
+            <div className="flex flex-col gap-1">
+              <label className="text-sm text-gray-600 font-medium">Filter Location</label>
+              <select
+                value={filterLocation}
+                onChange={(e) => setFilterLocation(e.target.value)}
+                className="border px-4 py-2 rounded-lg min-w-[200px]"
+              >
+                <option value="All">All Locations</option>
+                {CANTEEN_LOCATIONS.map(loc => (
+                  <option key={loc} value={loc}>{loc}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <Button onClick={handleGenerateReport} isLoading={loading}>
+            Generate Report
+          </Button>
+        </div>
       </div>
 
-      {dailyData && reportType !== 'items' && reportType !== 'credit' && (
+      {/* --- REPORT VIEW: DAILY / MONTHLY / YEARLY --- */}
+      {dailyData && reportType !== 'items' && reportType !== 'credit' && reportType !== 'canteen' && (
         <div ref={printRef}>
-          {/* Print Header */}
           <div className="hidden print:block mb-6 text-center">
             <h1 className="text-3xl font-bold mb-2">FilSync POS</h1>
             <h2 className="text-xl font-semibold mb-2">{getReportTitle()}</h2>
             <p className="text-gray-600">Generated on {new Date().toLocaleString()}</p>
             <hr className="my-4" />
           </div>
-
-          {/* Summary Cards */}
           <Card title="Sales Summary">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
@@ -247,38 +240,29 @@ export const ReportsPage: React.FC = () => {
               </div>
               <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                 <p className="text-gray-700 text-sm font-medium mb-1">Total Revenue</p>
-                <p className="text-3xl font-bold text-green-600">
-                  {formatCurrency(dailyData.total_revenue || 0)}
-                </p>
+                <p className="text-3xl font-bold text-green-600">{formatCurrency(dailyData.total_revenue || 0)}</p>
               </div>
               <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
                 <p className="text-gray-700 text-sm font-medium mb-1">Subtotal</p>
-                <p className="text-3xl font-bold text-purple-600">
-                  {formatCurrency(dailyData.total_subtotal || 0)}
-                </p>
+                <p className="text-3xl font-bold text-purple-600">{formatCurrency(dailyData.total_subtotal || 0)}</p>
               </div>
-              <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                <p className="text-gray-700 text-sm font-medium mb-1">Tax Amount</p>
-                <p className="text-3xl font-bold text-orange-600">
-                  {formatCurrency(dailyData.total_tax || 0)}
-                </p>
+              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                <p className="text-gray-700 text-sm font-medium mb-1">Total Items Sold</p>
+                <p className="text-3xl font-bold text-yellow-600">{dailyData.total_items || 0}</p>
               </div>
             </div>
           </Card>
         </div>
       )}
 
+      {/* --- REPORT VIEW: ITEMS --- */}
       {reportType === 'items' && itemSales.length > 0 && (
         <div ref={printRef} className="space-y-6">
-          {/* Print Header */}
           <div className="hidden print:block mb-6 text-center">
             <h1 className="text-3xl font-bold mb-2">FilSync POS</h1>
             <h2 className="text-xl font-semibold mb-2">{getReportTitle()}</h2>
-            <p className="text-gray-600">Generated on {new Date().toLocaleString()}</p>
             <hr className="my-4" />
           </div>
-
-          {/* Summary Statistics */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <Card>
               <p className="text-gray-600 text-sm font-medium">Total Products</p>
@@ -297,66 +281,44 @@ export const ReportsPage: React.FC = () => {
               </p>
             </Card>
           </div>
-
           <Card title="Item Sales Report">
             <div className="flex flex-col border border-gray-200 rounded-lg overflow-hidden">
-              {/* Scrollable Container */}
-              <div className="overflow-y-auto max-h-[400px]"> {/* Adjust height as needed */}
+              <div className="overflow-y-auto max-h-[400px]">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50 sticky top-0 z-10"> {/* Sticky Header */}
+                  <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase text-center">Qty Sold</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Qty Sold</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Revenue</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {itemSales.map((item, index) => (
                       <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
                         <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-800">{item.product.name}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-gray-600">{item.product.category?.name || 'N/A'}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-center font-medium">{item.total_quantity}</td>
-                        <td className="px-6 py-4 whitespace-nowrap font-semibold text-green-600">
-                          {formatCurrency(item.total_revenue)}
-                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-green-600">{formatCurrency(item.total_revenue)}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-              </div>
-
-              {/* Sticky Total Row */}
-              <div className="bg-gray-100 border-t border-gray-300 px-6 py-4 z-20">
-                <div className="flex justify-between items-center text-sm font-bold text-slate-900">
-                  <div className="flex-1 text-right pr-[22%]">TOTAL:</div>
-                  <div className="w-24 text-center">
-                    {itemSales.reduce((sum, item) => sum + Number(item.total_quantity || 0), 0)}
-                  </div>
-                  <div className="w-32 text-right text-green-600">
-                    {formatCurrency(itemSales.reduce((sum, item) => sum + Number(item.total_revenue || 0), 0))}
-                  </div>
-                </div>
               </div>
             </div>
           </Card>
         </div>
       )}
 
-      {/* Credit Sales Report */}
+      {/* --- REPORT VIEW: CREDIT --- */}
       {reportType === 'credit' && (
         <div ref={printRef}>
-          {/* Print Header */}
           <div className="hidden print:block mb-6 text-center">
             <h1 className="text-3xl font-bold mb-2">FilSync POS</h1>
             <h2 className="text-xl font-semibold mb-2">{getReportTitle()}</h2>
-            <p className="text-gray-600">Generated on {new Date().toLocaleString()}</p>
             <hr className="my-4" />
           </div>
-
-          <Card title="Credit Sales Summary (Teachers)">
+          <Card title="Credit Sales Summary">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Total Credit Orders</p>
@@ -365,109 +327,57 @@ export const ReportsPage: React.FC = () => {
               <div>
                 <p className="text-gray-600 text-sm font-medium">Outstanding Credit</p>
                 <p className="text-2xl font-bold text-red-600">
-                  {formatCurrency(
-                    creditSales
-                      .filter((c) => c.status === 'Unpaid')
-                      .reduce((sum, c) => sum + Number(c.total || 0), 0)
-                  )}
+                  {formatCurrency(creditSales.filter((c) => c.status === 'Unpaid').reduce((sum, c) => sum + Number(c.total || 0), 0))}
                 </p>
               </div>
               <div>
                 <p className="text-gray-600 text-sm font-medium">Paid Credit Revenue</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {formatCurrency(
-                    creditSales
-                      .filter((c) => c.status === 'Paid')
-                      .reduce((sum, c) => sum + Number(c.total || 0), 0)
-                  )}
+                  {formatCurrency(creditSales.filter((c) => c.status === 'Paid').reduce((sum, c) => sum + Number(c.total || 0), 0))}
                 </p>
               </div>
             </div>
           </Card>
-
-          <Card title="Credit Sales (Teachers)">
-            <div className="overflow-x-auto mt-4">
+          <Card title="Credit Orders List" className="mt-6">
+            <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Order ID
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Teacher
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Total Amount
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Action
-                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teacher</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Action</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {creditSales.map((sale) => (
                     <tr key={sale.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">{sale.order_number}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{sale.teacher_name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{sale.date}</td>
-                      <td className="px-6 py-4 whitespace-nowrap font-semibold">
-                        {formatCurrency(sale.total)}
+                      <td className="px-6 py-4">{sale.order_number}</td>
+                      <td className="px-6 py-4">{sale.teacher_name}</td>
+                      <td className="px-6 py-4">{sale.date}</td>
+                      <td className="px-6 py-4 text-right font-bold">{formatCurrency(sale.total)}</td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${sale.status === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{sale.status}</span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${sale.status === 'Paid'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-yellow-100 text-yellow-700'
-                            }`}
-                        >
-                          {sale.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {sale.status === 'Unpaid' ? (
+                      <td className="px-6 py-4 text-center">
+                        {sale.status === 'Unpaid' && (
                           <button
-                            type="button"
-                            className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                            className="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700"
                             onClick={async () => {
-                              if (
-                                !confirm(
-                                  `Mark order ${sale.order_number} as paid?`
-                                )
-                              ) {
-                                return;
-                              }
-                              try {
+                              if (confirm("Mark as paid?")) {
                                 await orderService.markAsPaid(sale.id);
-                                // Refresh credit sales list
                                 fetchCreditSales();
-                              } catch (error) {
-                                // eslint-disable-next-line no-console
-                                console.error('Error marking order as paid:', error);
-                                alert('Failed to mark order as paid. Please try again.');
                               }
                             }}
                           >
-                            Mark as Paid
+                            Mark Paid
                           </button>
-                        ) : (
-                          <span className="text-xs text-gray-400">Paid</span>
                         )}
                       </td>
                     </tr>
                   ))}
-                  {creditSales.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                        No credit sales found.
-                      </td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
             </div>
@@ -475,15 +385,23 @@ export const ReportsPage: React.FC = () => {
         </div>
       )}
 
-      {/* ================= CANTEEN REPORT ================= */}
-      {reportType === 'canteen' && canteenBills.length > 0 && (
+      {/* --- REPORT VIEW: CANTEEN (UPDATED WITH FILTER) --- */}
+      {reportType === 'canteen' && filteredCanteenBills.length > 0 && (
         <div ref={printRef}>
+          <div className="hidden print:block mb-6 text-center">
+            <h1 className="text-3xl font-bold mb-2">FilSync POS</h1>
+            <h2 className="text-xl font-semibold mb-2">{getReportTitle()}</h2>
+            <p className="text-gray-600">Generated on {new Date().toLocaleString()}</p>
+            <hr className="my-4" />
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <Card>
               <p className="text-sm text-gray-600">Total Paid Bills</p>
               <p className="text-2xl font-bold text-green-600">
                 {formatCurrency(
-                  canteenBills.filter(b => b.status === 'paid')
+                  filteredCanteenBills
+                    .filter(b => b.status === 'paid')
                     .reduce((s, b) => s + Number(b.amount), 0)
                 )}
               </p>
@@ -493,7 +411,8 @@ export const ReportsPage: React.FC = () => {
               <p className="text-sm text-gray-600">Outstanding Bills</p>
               <p className="text-2xl font-bold text-red-600">
                 {formatCurrency(
-                  canteenBills.filter(b => b.status === 'unpaid')
+                  filteredCanteenBills
+                    .filter(b => b.status === 'unpaid')
                     .reduce((s, b) => s + Number(b.amount), 0)
                 )}
               </p>
@@ -502,44 +421,55 @@ export const ReportsPage: React.FC = () => {
             <Card>
               <p className="text-sm text-gray-600">Occupied Stalls</p>
               <p className="text-2xl font-bold text-blue-600">
-                {new Set(canteenBills.map(b => b.tenant?.stall?.id)).size}
+                {new Set(filteredCanteenBills.map(b => b.tenant?.stall?.id)).size}
               </p>
             </Card>
           </div>
 
-          <Card title="Canteen Billing Details">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium">Tenant</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium">Stall</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium">Month</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium">Status</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium">Amount</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {canteenBills.map(b => (
-                  <tr key={b.id}>
-                    <td className="px-6 py-4">{b.tenant?.name}</td>
-                    <td className="px-6 py-4">{b.tenant?.stall?.name}</td>
-                    <td className="px-6 py-4">{b.month_year}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-bold ${b.status === 'paid'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'
-                        }`}>
-                        {b.status.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right font-semibold">
-                      {formatCurrency(Number(b.amount))}
-                    </td>
+          <Card title={`Canteen Billing Details (${filterLocation})`}>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tenant</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stall</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Month</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredCanteenBills.map(b => (
+                    <tr key={b.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 font-medium text-gray-900">{b.tenant?.name}</td>
+                      <td className="px-6 py-4 text-gray-600">{b.tenant?.stall?.name}</td>
+                      <td className="px-6 py-4 text-xs text-gray-500">{b.tenant?.stall?.location}</td>
+                      <td className="px-6 py-4 text-gray-600">{b.month_year}</td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${b.status === 'paid'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                          }`}>
+                          {b.status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right font-bold text-gray-700">
+                        {formatCurrency(Number(b.amount))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </Card>
+        </div>
+      )}
+
+      {/* Empty State for Canteen if no data matches filter */}
+      {reportType === 'canteen' && filteredCanteenBills.length === 0 && canteenBills.length > 0 && (
+        <div className="text-center py-10 bg-white rounded-lg border">
+          <p className="text-gray-500">No records found for {filterLocation}.</p>
         </div>
       )}
     </div>

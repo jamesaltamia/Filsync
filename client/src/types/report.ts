@@ -2,7 +2,7 @@ export interface DailySales {
   total_orders: number;
   total_revenue: number;
   total_subtotal: number;
-  total_tax: number;
+  total_items: number;
 }
 
 export interface MonthlySales extends DailySales { }
