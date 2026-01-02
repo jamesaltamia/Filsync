@@ -13,11 +13,13 @@ use App\Http\Controllers\StockController;
 use App\Http\Controllers\CanteenController;
 use Illuminate\Support\Facades\Route;
 
-// Public routes (no authentication required)
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+// Public routes (no authentication required) - with rate limiting
+Route::middleware(['throttle.auth:5,15'])->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+});
 
 // Protected routes (authentication required)
 Route::middleware('auth:sanctum')->group(function () {

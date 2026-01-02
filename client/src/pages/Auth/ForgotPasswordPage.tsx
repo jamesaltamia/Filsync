@@ -14,7 +14,6 @@ export const ForgotPasswordPage: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const [otpFromServer, setOtpFromServer] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleSendOtp = async (e: React.FormEvent) => {
@@ -26,12 +25,11 @@ export const ForgotPasswordPage: React.FC = () => {
     try {
       const response = await authService.forgotPassword({ email });
       setSuccess(response.message);
-      setOtpFromServer(response.otp || null);
       setStep('reset');
-
-      // Show OTP in development (remove in production)
+      
+      // Development mode: Show OTP if returned (only in debug mode)
       if (response.otp) {
-        setSuccess(`Password reset code sent! (Dev mode: ${response.otp})`);
+        setSuccess(`Password reset code sent! ${response.debug_note || ''} Your reset code: ${response.otp}`);
       }
     } catch (err: any) {
       const errorMessage = err.response?.data?.message ||
@@ -53,8 +51,29 @@ export const ForgotPasswordPage: React.FC = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long.');
+    // Enhanced password validation
+    if (newPassword.length < 8) {
+      setError('Password must be at least 8 characters long.');
+      return;
+    }
+
+    if (!/[a-z]/.test(newPassword)) {
+      setError('Password must contain at least one lowercase letter.');
+      return;
+    }
+
+    if (!/[A-Z]/.test(newPassword)) {
+      setError('Password must contain at least one uppercase letter.');
+      return;
+    }
+
+    if (!/[0-9]/.test(newPassword)) {
+      setError('Password must contain at least one number.');
+      return;
+    }
+
+    if (!/[^a-zA-Z0-9]/.test(newPassword)) {
+      setError('Password must contain at least one special character.');
       return;
     }
 
@@ -144,9 +163,12 @@ export const ForgotPasswordPage: React.FC = () => {
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Enter new password (min. 6 characters)"
+              placeholder="Min. 8 chars: uppercase, lowercase, number, symbol"
               required
             />
+            <p className="text-xs text-gray-500 mt-1 mb-2">
+              Password must be at least 8 characters and include uppercase, lowercase, number, and special character.
+            </p>
 
             <Input
               label="Confirm New Password"

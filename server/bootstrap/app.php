@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+            'throttle.auth' => \App\Http\Middleware\ThrottleAuth::class,
         ]);
 
         // Add CORS middleware

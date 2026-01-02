@@ -120,10 +120,6 @@ export const OrdersHistoryPage: React.FC = () => {
         {/* FOOTER / PAGINATION BAR */}
         <div className="bg-gray-50 border-t border-gray-200 px-6 py-3 flex justify-between items-center text-sm text-gray-500">
           <span>Showing {orders.length} orders</span>
-          <div className="flex gap-2">
-            <button className="px-3 py-1 border rounded bg-white hover:bg-gray-50 disabled:opacity-50">Previous</button>
-            <button className="px-3 py-1 border rounded bg-white hover:bg-gray-50 disabled:opacity-50">Next</button>
-          </div>
         </div>
       </div>
 

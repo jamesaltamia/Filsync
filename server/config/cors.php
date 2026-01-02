@@ -19,11 +19,21 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:5173', 'http://localhost:3000'],
+    'allowed_origins' => [
+        'http://localhost:5173',
+        'http://localhost:3000',
+        env('FRONTEND_URL', 'http://localhost:5173'),
+    ],
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => [
+        'Accept',
+        'Authorization',
+        'Content-Type',
+        'X-Requested-With',
+        'X-CSRF-TOKEN',
+    ],
 
     'exposed_headers' => [],
 

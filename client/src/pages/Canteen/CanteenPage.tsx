@@ -16,7 +16,11 @@ const CANTEEN_LOCATIONS = ['Main Canteen', 'High School Canteen'];
 export const CanteenPage: React.FC = () => {
     // --- STATES ---
     const [activeTab, setActiveTab] = useState<'dashboard' | 'stalls' | 'billing'>('dashboard');
-    const [filterLocation, setFilterLocation] = useState<string>('All'); // NEW: Filter State
+    const [filterLocation, setFilterLocation] = useState<string>('All');
+
+    // NEW: Search and Status States
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [filterStatus, setFilterStatus] = useState<string>('All'); // 'All', 'paid', 'unpaid'
 
     const [stalls, setStalls] = useState<Stall[]>([]);
     const [bills, setBills] = useState<Bill[]>([]);
@@ -58,16 +62,39 @@ export const CanteenPage: React.FC = () => {
         return stalls.filter(s => s.location === filterLocation);
     }, [stalls, filterLocation]);
 
+    // UPDATED: Multi-criteria filter for Bills
     const filteredBills = useMemo(() => {
-        if (filterLocation === 'All') return bills;
-        return bills.filter(b => b.tenant?.stall?.location === filterLocation);
-    }, [bills, filterLocation]);
+        let result = bills;
 
-    // --- ANALYTICS CALCULATIONS (Updated to use Filtered Data) ---
+        // 1. Filter by Location
+        if (filterLocation !== 'All') {
+            result = result.filter(b => b.tenant?.stall?.location === filterLocation);
+        }
+
+        // 2. Filter by Payment Status
+        if (filterStatus !== 'All') {
+            result = result.filter(b => b.status === filterStatus);
+        }
+
+        // 3. Filter by Search Query (Month or Tenant Name)
+        if (searchQuery.trim() !== '') {
+            const query = searchQuery.toLowerCase();
+            result = result.filter(b =>
+                b.month_year.toLowerCase().includes(query) ||
+                (b.tenant?.name || '').toLowerCase().includes(query)
+            );
+        }
+
+        return result;
+    }, [bills, filterLocation, filterStatus, searchQuery]);
+
+    // --- ANALYTICS CALCULATIONS ---
     const { lineData, barData, pieData, stats } = useMemo(() => {
         const monthlyMap: Record<string, number> = {};
         const stallMap: Record<string, number> = {};
 
+        // Use unfiltered bills for global logic or filtered for contextual logic
+        // Here we use filteredBills so the dashboard reacts to the Location filter
         filteredBills.filter(b => b.status === 'paid').forEach(bill => {
             monthlyMap[bill.month_year] = (monthlyMap[bill.month_year] || 0) + Number(bill.amount);
             const sName = bill.tenant?.stall?.name || 'Unknown';
@@ -77,7 +104,6 @@ export const CanteenPage: React.FC = () => {
         const lineData = Object.keys(monthlyMap).map(m => ({ month: m, revenue: monthlyMap[m] }));
         const barData = Object.keys(stallMap).map(s => ({ stall: s, total: stallMap[s] }));
 
-        // Use filteredStalls for occupancy
         const occupied = filteredStalls.filter(s => s.status === 'occupied').length;
         const vacant = filteredStalls.length - occupied;
         const pieData = [
@@ -219,7 +245,6 @@ export const CanteenPage: React.FC = () => {
             <div className="flex-1 overflow-y-auto pr-2">
                 {activeTab === 'dashboard' && (
                     <div className="space-y-6">
-                        {/* Summary Cards - Uses 'stats' derived from filtered data */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <DashboardCard title="Total Stalls" value={stats.total} icon="🏪" color="bg-blue-50 text-blue-600" />
                             <DashboardCard title="Occupancy" value={`${stats.occupied}/${stats.total}`} icon="👥" color="bg-indigo-50 text-indigo-600" />
@@ -299,7 +324,6 @@ export const CanteenPage: React.FC = () => {
                     </div>
                 )}
 
-                {/* 2. STALLS TAB */}
                 {activeTab === 'stalls' && (
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
@@ -308,7 +332,6 @@ export const CanteenPage: React.FC = () => {
                             </h2>
                             <Button size="sm" onClick={() => setIsStallModalOpen(true)}>+ Add New Stall</Button>
                         </div>
-                        {/* Use filteredStalls here */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {filteredStalls.length === 0 ? (
                                 <p className="col-span-full text-center text-gray-400 py-10">No stalls found in this category.</p>
@@ -327,15 +350,45 @@ export const CanteenPage: React.FC = () => {
                     </div>
                 )}
 
-                {/* 3. BILLING TAB */}
                 {activeTab === 'billing' && (
                     <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                        <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
-                            <h3 className="font-bold text-gray-700">Collection Logs</h3>
-                            <Button onClick={handleGenerateMonthlyBills} isLoading={actionLoading}>
+                        {/* UPDATED: Billing Filter Toolbar */}
+                        <div className="p-4 border-b bg-gray-50 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                                <h3 className="font-bold text-gray-700 hidden md:block">Collections</h3>
+
+                                {/* Search Bar */}
+                                <div className="relative flex-1 min-w-[200px] md:w-64">
+                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400 text-xs">
+                                        🔍
+                                    </span>
+                                    <input
+                                        type="text"
+                                        placeholder="Search month or tenant..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="block w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+                                    />
+                                </div>
+
+                                {/* Status Filter */}
+                                <select
+                                    value={filterStatus}
+                                    onChange={(e) => setFilterStatus(e.target.value)}
+                                    className="bg-white border border-gray-300 text-gray-700 py-1.5 pl-3 pr-8 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm appearance-none"
+                                    style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2020%2020'%20fill='currentColor'%3E%3Cpath%20fill-rule='evenodd'%20d='M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z'%20clip-rule='evenodd'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.2em' }}
+                                >
+                                    <option value="All">All Status</option>
+                                    <option value="paid">Paid</option>
+                                    <option value="unpaid">Unpaid</option>
+                                </select>
+                            </div>
+
+                            <Button onClick={handleGenerateMonthlyBills} isLoading={actionLoading} className="w-full lg:w-auto">
                                 ⚡ Generate Monthly Bills
                             </Button>
                         </div>
+
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm text-left">
                                 <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-b">
@@ -349,7 +402,6 @@ export const CanteenPage: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {/* Use filteredBills here */}
                                     {filteredBills.map(bill => (
                                         <tr key={bill.id} className="border-b hover:bg-gray-50 transition">
                                             <td className="px-4 py-3">
@@ -385,13 +437,23 @@ export const CanteenPage: React.FC = () => {
                                     ))}
                                 </tbody>
                             </table>
-                            {filteredBills.length === 0 && <div className="text-center p-6 text-gray-400">No bills found for this category.</div>}
+                            {filteredBills.length === 0 && (
+                                <div className="text-center p-12 bg-white flex flex-col items-center">
+                                    <p className="text-gray-400 text-lg">No records found matching your criteria.</p>
+                                    <button
+                                        onClick={() => { setSearchQuery(''); setFilterStatus('All'); }}
+                                        className="text-blue-500 text-sm hover:underline mt-2"
+                                    >
+                                        Clear search and filters
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* MODAL: ADD/EDIT STALL (UPDATED) */}
+            {/* MODALS SECTION */}
             <Modal
                 isOpen={isStallModalOpen}
                 onClose={() => {
@@ -409,8 +471,6 @@ export const CanteenPage: React.FC = () => {
                         onChange={(e) => setNewStall({ ...newStall, name: e.target.value })}
                         required
                     />
-
-                    {/* UPDATED: Location Dropdown instead of Input */}
                     <div className="flex flex-col gap-1">
                         <label className="text-sm font-medium text-gray-700">Location Category</label>
                         <select
@@ -423,7 +483,6 @@ export const CanteenPage: React.FC = () => {
                             ))}
                         </select>
                     </div>
-
                     <Input
                         label="Monthly Rent (₱)"
                         type="number"
@@ -433,18 +492,12 @@ export const CanteenPage: React.FC = () => {
                         required
                     />
                     <div className="flex justify-end space-x-2 pt-4">
-                        <Button variant="outline" type='button' onClick={() => {
-                            setIsStallModalOpen(false);
-                            setSelectedStall(null);
-                        }}>Cancel</Button>
-                        <Button type="submit" isLoading={actionLoading}>
-                            {selectedStall ? "Update Stall" : "Save Stall"}
-                        </Button>
+                        <Button variant="outline" type='button' onClick={() => setIsStallModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" isLoading={actionLoading}>{selectedStall ? "Update Stall" : "Save Stall"}</Button>
                     </div>
                 </form>
             </Modal>
 
-            {/* MODAL: TENANT ASSIGNMENT (Same as before) */}
             <Modal
                 isOpen={isTenantModalOpen}
                 onClose={() => setIsTenantModalOpen(false)}
@@ -481,7 +534,6 @@ export const CanteenPage: React.FC = () => {
                 </form>
             </Modal>
 
-            {/* MODAL: RECEIPT (Same as before) */}
             <Modal
                 isOpen={isReceiptModalOpen}
                 onClose={() => setIsReceiptModalOpen(false)}
@@ -493,23 +545,19 @@ export const CanteenPage: React.FC = () => {
                         <p className="text-xs uppercase">{selectedBill?.tenant?.stall?.location || 'Campus Canteen'}</p>
                         <p>Official Receipt</p>
                     </div>
-
                     <div className="space-y-1 mb-4">
                         <div className="flex justify-between"><span>Date:</span> <span>{selectedBill?.paid_at ? new Date(selectedBill.paid_at).toLocaleDateString() : 'N/A'}</span></div>
                         <div className="flex justify-between"><span>Bill ID:</span> <span>#{selectedBill?.id}</span></div>
                         <div className="flex justify-between font-bold"><span>Tenant:</span> <span>{selectedBill?.tenant?.name}</span></div>
                         <div className="flex justify-between"><span>Stall:</span> <span>{selectedBill?.tenant?.stall?.name}</span></div>
                     </div>
-
                     <div className="border-t border-b border-gray-300 py-2 mb-4 font-bold text-center uppercase">
                         {selectedBill?.month_year} RENT
                     </div>
-
                     <div className="flex justify-between text-lg font-bold">
                         <span>TOTAL PAID:</span>
                         <span>{formatCurrency(Number(selectedBill?.amount || 0))}</span>
                     </div>
-                    <div className="mt-6 text-center text-xs text-gray-500 italic">Thank you for your payment!</div>
                 </div>
                 <div className="mt-4 flex justify-end">
                     <Button onClick={() => window.print()} variant="outline">Print Receipt</Button>

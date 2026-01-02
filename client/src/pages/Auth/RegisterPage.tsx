@@ -28,8 +28,29 @@ export const RegisterPage: React.FC = () => {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+    // Enhanced password validation
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long.');
+      return;
+    }
+
+    if (!/[a-z]/.test(password)) {
+      setError('Password must contain at least one lowercase letter.');
+      return;
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      setError('Password must contain at least one uppercase letter.');
+      return;
+    }
+
+    if (!/[0-9]/.test(password)) {
+      setError('Password must contain at least one number.');
+      return;
+    }
+
+    if (!/[^a-zA-Z0-9]/.test(password)) {
+      setError('Password must contain at least one special character.');
       return;
     }
 
@@ -108,9 +129,12 @@ export const RegisterPage: React.FC = () => {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password (min. 6 characters)"
+            placeholder="Min. 8 chars: uppercase, lowercase, number, symbol"
             required
           />
+          <p className="text-xs text-gray-500 mt-1">
+            Password must be at least 8 characters and include uppercase, lowercase, number, and special character.
+          </p>
 
           <Input
             label="Confirm Password"

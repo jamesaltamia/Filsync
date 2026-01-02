@@ -13,14 +13,28 @@ class ReportService
     {
         $date = $date ? Carbon::parse($date) : Carbon::today();
 
-        return Order::whereDate('created_at', $date)
+        $orderStats = Order::whereDate('created_at', $date)
             ->select(
-                DB::raw('COUNT(*) as total_orders'),
-                DB::raw('SUM(total) as total_revenue'),
-                DB::raw('SUM(subtotal) as total_subtotal'),
-                DB::raw('SUM(tax_amount) as total_tax')
+                DB::raw('COUNT(DISTINCT orders.id) as total_orders'),
+                DB::raw('SUM(orders.total) as total_revenue'),
+                DB::raw('SUM(orders.subtotal) as total_subtotal'),
+                DB::raw('SUM(orders.tax_amount) as total_tax')
             )
             ->first();
+
+        // Calculate total items sold
+        $totalItems = OrderItem::join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->whereDate('orders.created_at', $date)
+            ->where('orders.status', '!=', 'cancelled')
+            ->sum('order_items.quantity');
+
+        return (object) [
+            'total_orders' => $orderStats->total_orders ?? 0,
+            'total_revenue' => $orderStats->total_revenue ?? 0,
+            'total_subtotal' => $orderStats->total_subtotal ?? 0,
+            'total_tax' => $orderStats->total_tax ?? 0,
+            'total_items' => (int) $totalItems,
+        ];
     }
 
     public function getMonthlySales($year = null, $month = null)
@@ -28,29 +42,58 @@ class ReportService
         $year = $year ?? Carbon::now()->year;
         $month = $month ?? Carbon::now()->month;
 
-        return Order::whereYear('created_at', $year)
+        $orderStats = Order::whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
             ->select(
-                DB::raw('COUNT(*) as total_orders'),
-                DB::raw('SUM(total) as total_revenue'),
-                DB::raw('SUM(subtotal) as total_subtotal'),
-                DB::raw('SUM(tax_amount) as total_tax')
+                DB::raw('COUNT(DISTINCT orders.id) as total_orders'),
+                DB::raw('SUM(orders.total) as total_revenue'),
+                DB::raw('SUM(orders.subtotal) as total_subtotal'),
+                DB::raw('SUM(orders.tax_amount) as total_tax')
             )
             ->first();
+
+        // Calculate total items sold
+        $totalItems = OrderItem::join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->whereYear('orders.created_at', $year)
+            ->whereMonth('orders.created_at', $month)
+            ->where('orders.status', '!=', 'cancelled')
+            ->sum('order_items.quantity');
+
+        return (object) [
+            'total_orders' => $orderStats->total_orders ?? 0,
+            'total_revenue' => $orderStats->total_revenue ?? 0,
+            'total_subtotal' => $orderStats->total_subtotal ?? 0,
+            'total_tax' => $orderStats->total_tax ?? 0,
+            'total_items' => (int) $totalItems,
+        ];
     }
 
     public function getYearlySales($year = null)
     {
         $year = $year ?? Carbon::now()->year;
 
-        return Order::whereYear('created_at', $year)
+        $orderStats = Order::whereYear('created_at', $year)
             ->select(
-                DB::raw('COUNT(*) as total_orders'),
-                DB::raw('SUM(total) as total_revenue'),
-                DB::raw('SUM(subtotal) as total_subtotal'),
-                DB::raw('SUM(tax_amount) as total_tax')
+                DB::raw('COUNT(DISTINCT orders.id) as total_orders'),
+                DB::raw('SUM(orders.total) as total_revenue'),
+                DB::raw('SUM(orders.subtotal) as total_subtotal'),
+                DB::raw('SUM(orders.tax_amount) as total_tax')
             )
             ->first();
+
+        // Calculate total items sold
+        $totalItems = OrderItem::join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->whereYear('orders.created_at', $year)
+            ->where('orders.status', '!=', 'cancelled')
+            ->sum('order_items.quantity');
+
+        return (object) [
+            'total_orders' => $orderStats->total_orders ?? 0,
+            'total_revenue' => $orderStats->total_revenue ?? 0,
+            'total_subtotal' => $orderStats->total_subtotal ?? 0,
+            'total_tax' => $orderStats->total_tax ?? 0,
+            'total_items' => (int) $totalItems,
+        ];
     }
 
     public function getItemSales($startDate = null, $endDate = null)
