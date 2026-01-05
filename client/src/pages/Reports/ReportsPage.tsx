@@ -2,8 +2,10 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { reportService } from '../../services/reportService';
 import { canteenService } from '../../services/canteenService';
 import { orderService } from '../../services/orderService';
+import { categoryService } from '../../services/inventoryService';
 import type { DailySales, ItemSales, CreditSale } from '../../types/report';
 import type { Bill } from '../../types/canteen';
+import type { Category } from '../../types/product';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
@@ -24,10 +26,15 @@ export const ReportsPage: React.FC = () => {
   // NEW: Filter State for Canteen
   const [filterLocation, setFilterLocation] = useState<string>('All');
 
+  // NEW: Filter State for Item Sales
+  const [itemSalesCategory, setItemSalesCategory] = useState<number | null>(null);
+  const [itemSalesDate, setItemSalesDate] = useState<string>('');
+
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -37,7 +44,22 @@ export const ReportsPage: React.FC = () => {
     setCreditSales([]);
     setCanteenBills([]);
     setFilterLocation('All'); // Reset filter on tab change
+    setItemSalesCategory(null);
+    setItemSalesDate('');
   }, [reportType]);
+
+  useEffect(() => {
+    // Fetch categories for Item Sales filter
+    const fetchCategories = async () => {
+      try {
+        const data = await categoryService.getCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   /* ---------------- DATA FETCHING ---------------- */
   const fetchDaily = async () => {
@@ -57,7 +79,12 @@ export const ReportsPage: React.FC = () => {
 
   const fetchItems = async () => {
     setLoading(true);
-    try { setItemSales(await reportService.getItemSales()); } finally { setLoading(false); }
+    try {
+      const startDate = itemSalesDate || undefined;
+      const endDate = itemSalesDate || undefined; // Use same date for both if filtering by single date
+      const categoryId = itemSalesCategory || undefined;
+      setItemSales(await reportService.getItemSales(startDate, endDate, categoryId));
+    } finally { setLoading(false); }
   };
 
   const fetchCreditSales = async () => {
@@ -95,9 +122,9 @@ export const ReportsPage: React.FC = () => {
     let filename = '';
 
     if (reportType === 'items') {
-      csv = 'Product,Category,Quantity,Revenue\n';
+      csv = 'Product,Category,Quantity,Unit Price,Revenue,Total Unit Cost\n';
       itemSales.forEach(i => {
-        csv += `"${i.product.name}","${i.product.category?.name}",${i.total_quantity},${i.total_revenue}\n`;
+        csv += `"${i.product.name}","${i.product.category?.name || 'N/A'}",${i.total_quantity},${i.product.unit_price || 0},${i.total_revenue},${i.total_unit_cost}\n`;
       });
       filename = 'item-sales.csv';
     }
@@ -123,7 +150,9 @@ export const ReportsPage: React.FC = () => {
       csv =
         `Metric,Value\n` +
         `Total Orders,${dailyData.total_orders}\n` +
-        `Total Revenue,${dailyData.total_revenue}\n`;
+        `Total Revenue,${dailyData.total_revenue}\n` +
+        `Total Unit Cost,${dailyData.total_unit_cost || 0}\n` +
+        `Total Items Sold,${dailyData.total_items || 0}\n`;
       filename = `${reportType}-sales.csv`;
     }
 
@@ -200,6 +229,34 @@ export const ReportsPage: React.FC = () => {
             </div>
           )}
 
+          {/* NEW: Item Sales Filters */}
+          {reportType === 'items' && (
+            <>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-gray-600 font-medium">Category</label>
+                <select
+                  value={itemSalesCategory || ''}
+                  onChange={(e) => setItemSalesCategory(e.target.value ? Number(e.target.value) : null)}
+                  className="border px-4 py-2 rounded-lg min-w-[200px]"
+                >
+                  <option value="">All Categories</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-gray-600 font-medium">Date</label>
+                <input
+                  type="date"
+                  value={itemSalesDate}
+                  onChange={(e) => setItemSalesDate(e.target.value)}
+                  className="border px-4 py-2 rounded-lg"
+                />
+              </div>
+            </>
+          )}
+
           {/* NEW: Canteen Location Filter */}
           {reportType === 'canteen' && (
             <div className="flex flex-col gap-1">
@@ -243,8 +300,8 @@ export const ReportsPage: React.FC = () => {
                 <p className="text-3xl font-bold text-green-600">{formatCurrency(dailyData.total_revenue || 0)}</p>
               </div>
               <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <p className="text-gray-700 text-sm font-medium mb-1">Subtotal</p>
-                <p className="text-3xl font-bold text-purple-600">{formatCurrency(dailyData.total_subtotal || 0)}</p>
+                <p className="text-gray-700 text-sm font-medium mb-1">Total Unit Cost</p>
+                <p className="text-3xl font-bold text-purple-600">{formatCurrency(dailyData.total_unit_cost || 0)}</p>
               </div>
               <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
                 <p className="text-gray-700 text-sm font-medium mb-1">Total Items Sold</p>
@@ -280,6 +337,12 @@ export const ReportsPage: React.FC = () => {
                 {formatCurrency(itemSales.reduce((sum, item) => sum + Number(item.total_revenue || 0), 0))}
               </p>
             </Card>
+            <Card>
+              <p className="text-gray-600 text-sm font-medium">Total Unit Cost</p>
+              <p className="text-2xl font-bold text-orange-600">
+                {formatCurrency(itemSales.reduce((sum, item) => sum + Number(item.total_unit_cost || 0), 0))}
+              </p>
+            </Card>
           </div>
           <Card title="Item Sales Report">
             <div className="flex flex-col border border-gray-200 rounded-lg overflow-hidden">
@@ -290,7 +353,9 @@ export const ReportsPage: React.FC = () => {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
                       <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Qty Sold</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Unit Price</th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Revenue</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Unit Cost</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -299,7 +364,11 @@ export const ReportsPage: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-800">{item.product.name}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-gray-600">{item.product.category?.name || 'N/A'}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-center font-medium">{item.total_quantity}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-gray-600">
+                          {item.product.unit_price ? formatCurrency(item.product.unit_price) : '-'}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-green-600">{formatCurrency(item.total_revenue)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-orange-600">{formatCurrency(item.total_unit_cost)}</td>
                       </tr>
                     ))}
                   </tbody>

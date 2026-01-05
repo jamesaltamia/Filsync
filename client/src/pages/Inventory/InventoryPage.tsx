@@ -25,10 +25,12 @@ export const InventoryPage: React.FC = () => {
     description: '',
     category_id: '',
     price: '',
+    unit_price: '',
     stock: '',
     low_stock_threshold: '',
-    sku: '',
     barcode: '',
+    supplier: '',
+    supplier_date: '',
     is_active: true,
   });
   const [productImage, setProductImage] = useState<File | null>(null);
@@ -90,11 +92,19 @@ export const InventoryPage: React.FC = () => {
       formData.append('description', productForm.description || '');
       formData.append('category_id', String(productForm.category_id));
       formData.append('price', String(productForm.price));
+      if (productForm.unit_price) {
+        formData.append('unit_price', String(productForm.unit_price));
+      }
       formData.append('stock', String(productForm.stock));
       formData.append('low_stock_threshold', String(productForm.low_stock_threshold));
-      formData.append('sku', productForm.sku || '');
       if (productForm.barcode) {
         formData.append('barcode', productForm.barcode);
+      }
+      if (productForm.supplier) {
+        formData.append('supplier', productForm.supplier);
+      }
+      if (productForm.supplier_date) {
+        formData.append('supplier_date', productForm.supplier_date);
       }
       formData.append('is_active', productForm.is_active ? '1' : '0');
 
@@ -133,10 +143,12 @@ export const InventoryPage: React.FC = () => {
       description: product.description || '',
       category_id: String(product.category_id),
       price: String(product.price),
+      unit_price: String(product.unit_price || ''),
       stock: String(product.stock),
       low_stock_threshold: String(product.low_stock_threshold),
-      sku: product.sku || '',
       barcode: product.barcode || '',
+      supplier: product.supplier || '',
+      supplier_date: product.supplier_date || '',
       is_active: product.is_active,
     });
     setImagePreview(product.image || null);
@@ -194,10 +206,12 @@ export const InventoryPage: React.FC = () => {
       description: '',
       category_id: '',
       price: '',
+      unit_price: '',
       stock: '',
       low_stock_threshold: '',
-      sku: '',
       barcode: '',
+      supplier: '',
+      supplier_date: '',
       is_active: true,
     });
     setProductImage(null);
@@ -293,8 +307,11 @@ export const InventoryPage: React.FC = () => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Unit Price</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
@@ -302,29 +319,44 @@ export const InventoryPage: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {products.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-10 text-center text-gray-500">
                     No products found in inventory.
                   </td>
                 </tr>
               ) : (
-                products.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900">{product.name}</div>
-                      {product.size && <div className="text-xs text-gray-500">Size: {product.size}</div>}
-                      <div className="text-xs text-gray-400">{product.sku}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.category?.name || 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-700">
-                      {formatCurrency(product.price)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`font-mono font-bold ${product.stock <= product.low_stock_threshold ? 'text-red-600' : 'text-gray-700'}`}>
-                        {product.stock}
-                      </span>
-                    </td>
+                products.map((product) => {
+                  const totalUnitPrice = (product.unit_price || 0) * product.stock;
+                  return (
+                    <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="font-medium text-gray-900">{product.name}</div>
+                        {product.size && <div className="text-xs text-gray-500">Size: {product.size}</div>}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {product.category?.name || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {product.supplier || '-'}
+                        {product.supplier_date && (
+                          <div className="text-xs text-gray-400">
+                            {new Date(product.supplier_date).toLocaleDateString()}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-700">
+                        {formatCurrency(product.price)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {product.unit_price ? formatCurrency(product.unit_price) : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`font-mono font-bold ${product.stock <= product.low_stock_threshold ? 'text-red-600' : 'text-gray-700'}`}>
+                          {product.stock}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">
+                        {product.unit_price ? formatCurrency(totalUnitPrice) : '-'}
+                      </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-semibold ${product.stock > product.low_stock_threshold
@@ -366,7 +398,8 @@ export const InventoryPage: React.FC = () => {
                       </div>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -456,9 +489,13 @@ export const InventoryPage: React.FC = () => {
               required
             />
             <Input
-              label="SKU (Optional)"
-              value={productForm.sku}
-              onChange={(e) => setProductForm({ ...productForm, sku: e.target.value })}
+              label="Unit Price (Optional)"
+              type="number"
+              step="0.01"
+              value={productForm.unit_price}
+              onChange={(e) => setProductForm({ ...productForm, unit_price: e.target.value })}
+              placeholder="Enter unit price (e.g., 500)"
+              description="Cost per unit for inventory valuation"
             />
           </div>
           <Input
@@ -468,6 +505,20 @@ export const InventoryPage: React.FC = () => {
             placeholder="Scan or enter barcode"
             description="Unique barcode for this product variant"
           />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Supplier (Optional)"
+              value={productForm.supplier}
+              onChange={(e) => setProductForm({ ...productForm, supplier: e.target.value })}
+              placeholder="Enter supplier name"
+            />
+            <Input
+              label="Date (Optional)"
+              type="date"
+              value={productForm.supplier_date}
+              onChange={(e) => setProductForm({ ...productForm, supplier_date: e.target.value })}
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Product Image (Optional)

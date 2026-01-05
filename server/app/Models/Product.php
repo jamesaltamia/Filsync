@@ -14,18 +14,22 @@ class Product extends Model
         'description',
         'category_id',
         'price',
+        'unit_price',
         'stock',
         'low_stock_threshold',
         'image',
-        'sku',
         'barcode',
+        'supplier',
+        'supplier_date',
         'is_active',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'unit_price' => 'decimal:2',
         'stock' => 'integer',
         'low_stock_threshold' => 'integer',
+        'supplier_date' => 'date',
         'is_active' => 'boolean',
     ];
 

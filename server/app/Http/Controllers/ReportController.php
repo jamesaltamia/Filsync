@@ -40,7 +40,8 @@ class ReportController extends Controller
     {
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
-        $sales = $this->reportService->getItemSales($startDate, $endDate);
+        $categoryId = $request->get('category_id');
+        $sales = $this->reportService->getItemSales($startDate, $endDate, $categoryId);
         return response()->json($sales);
     }
 

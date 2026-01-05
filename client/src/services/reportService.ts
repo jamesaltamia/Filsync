@@ -17,9 +17,9 @@ export const reportService = {
     return response.data;
   },
 
-  getItemSales: async (startDate?: string, endDate?: string) => {
+  getItemSales: async (startDate?: string, endDate?: string, categoryId?: number) => {
     const response = await api.get('/reports/item-sales', {
-      params: { start_date: startDate, end_date: endDate },
+      params: { start_date: startDate, end_date: endDate, category_id: categoryId },
     });
     return response.data;
   },

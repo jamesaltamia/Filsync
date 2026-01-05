@@ -29,7 +29,6 @@ class InventoryController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%")
                   ->orWhere('barcode', 'like', "%{$search}%");
             });
         }
@@ -56,11 +55,13 @@ class InventoryController extends Controller
             'description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
             'price' => 'required|numeric|min:0',
+            'unit_price' => 'nullable|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'low_stock_threshold' => 'required|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'sku' => 'nullable|string|unique:products,sku',
             'barcode' => 'nullable|string|unique:products,barcode',
+            'supplier' => 'nullable|string|max:255',
+            'supplier_date' => 'nullable|date',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -94,11 +95,13 @@ class InventoryController extends Controller
             'description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
             'price' => 'required|numeric|min:0',
+            'unit_price' => 'nullable|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'low_stock_threshold' => 'required|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'sku' => 'nullable|string|unique:products,sku,' . $id,
             'barcode' => 'nullable|string|unique:products,barcode,' . $id,
+            'supplier' => 'nullable|string|max:255',
+            'supplier_date' => 'nullable|date',
             'is_active' => 'nullable|boolean',
         ]);
 

@@ -108,7 +108,7 @@ export const CanteenPage: React.FC = () => {
         const vacant = filteredStalls.length - occupied;
         const pieData = [
             { name: 'Occupied', value: occupied, color: '#2563eb' },
-            { name: 'Vacant', value: vacant, color: '#e5e7eb' }
+            { name: 'Vacant', value: vacant, color: '#4acd55ff' }
         ];
 
         return {

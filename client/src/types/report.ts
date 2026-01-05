@@ -2,6 +2,7 @@ export interface DailySales {
   total_orders: number;
   total_revenue: number;
   total_subtotal: number;
+  total_unit_cost: number;
   total_items: number;
 }
 
@@ -14,6 +15,7 @@ export interface ItemSales {
     size: any;
     id: number;
     name: string;
+    unit_price?: number;
     category?: {
       id: number;
       name: string;
@@ -21,6 +23,7 @@ export interface ItemSales {
   };
   total_quantity: number;
   total_revenue: number;
+  total_unit_cost: number;
 }
 
 export interface CreditSale {
