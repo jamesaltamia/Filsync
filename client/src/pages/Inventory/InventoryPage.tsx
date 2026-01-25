@@ -17,6 +17,7 @@ export const InventoryPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'disabled'>('all');
   const [isEditMode, setIsEditMode] = useState(false);
 
   const [productForm, setProductForm] = useState({
@@ -44,13 +45,14 @@ export const InventoryPage: React.FC = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, statusFilter]);
 
   const fetchProducts = async () => {
     try {
       const data = await inventoryService.getProducts({
         category_id: selectedCategory || undefined,
         search: searchQuery || undefined,
+        is_active: statusFilter === 'all' ? undefined : (statusFilter === 'active' ? true : false),
       });
       setProducts(Array.isArray(data.data) ? data.data : data);
     } catch (error) {
@@ -106,7 +108,10 @@ export const InventoryPage: React.FC = () => {
       if (productForm.supplier_date) {
         formData.append('supplier_date', productForm.supplier_date);
       }
-      formData.append('is_active', productForm.is_active ? '1' : '0');
+
+      // Auto-disable if creating with 0 stock
+      const shouldBeActive = Number(productForm.stock) > 0 ? (productForm.is_active ? '1' : '0') : '0';
+      formData.append('is_active', shouldBeActive);
 
       if (productImage) {
         formData.append('image', productImage);
@@ -157,21 +162,35 @@ export const InventoryPage: React.FC = () => {
     setShowProductModal(true);
   };
 
-  const handleDeleteProduct = async (product: Product) => {
-    if (!confirm(`Are you sure you want to delete "${product.name}"? This action cannot be undone.`)) {
+  const handleToggleStatus = async (product: Product) => {
+    // Prevent enabling if stock is 0
+    if (!product.is_active && product.stock <= 0) {
+      alert("Cannot enable a product with 0 stock. Please add stock first.");
+      return;
+    }
+
+    const action = product.is_active ? 'disable' : 'enable';
+    if (!confirm(`Are you sure you want to ${action} "${product.name}"?`)) {
       return;
     }
 
     setLoading(true);
     try {
-      await inventoryService.deleteProduct(product.id);
+      const formData = new FormData();
+      formData.append('is_active', product.is_active ? '0' : '1');
+      formData.append('name', product.name);
+      formData.append('category_id', String(product.category_id));
+      formData.append('price', String(product.price));
+      formData.append('stock', String(product.stock));
+      formData.append('low_stock_threshold', String(product.low_stock_threshold));
+
+      await inventoryService.updateProduct(product.id, formData);
       fetchProducts();
       fetchLowStock();
-      alert('Product deleted successfully');
     } catch (error: any) {
       const errorMessage = error.response?.data?.message ||
         error.response?.data?.error ||
-        'Error deleting product';
+        'Error updating product status';
       alert(errorMessage);
     } finally {
       setLoading(false);
@@ -187,6 +206,22 @@ export const InventoryPage: React.FC = () => {
         Number(stockQuantity),
         'add'
       );
+
+      // AUTO-ENABLE LOGIC: If we add stock and the product was disabled/out of stock,
+      // we can send a second request to enable it, or rely on the backend to handle it.
+      // For now, we manually enable it if the previous stock was 0.
+      if (!selectedProduct.is_active && Number(stockQuantity) > 0) {
+        const formData = new FormData();
+        formData.append('is_active', '1');
+        formData.append('name', selectedProduct.name);
+        formData.append('category_id', String(selectedProduct.category_id));
+        formData.append('price', String(selectedProduct.price));
+        formData.append('stock', String(selectedProduct.stock + Number(stockQuantity)));
+        formData.append('low_stock_threshold', String(selectedProduct.low_stock_threshold));
+
+        await inventoryService.updateProduct(selectedProduct.id, formData);
+      }
+
       setShowStockModal(false);
       setSelectedProduct(null);
       setStockQuantity('');
@@ -233,21 +268,15 @@ export const InventoryPage: React.FC = () => {
   };
 
   return (
-    // Main Container: Fixed height to prevent body scroll
     <div className="h-[calc(100vh-6rem)]">
-
-      {/* Card Container: Flex column to manage internal scrolling */}
       <div className="bg-white rounded-lg shadow-md flex flex-col h-full overflow-hidden">
 
-        {/* ----------------- FIXED HEADER SECTION ----------------- */}
         <div className="p-4 border-b bg-white z-10 space-y-4">
-          {/* Header Title & Add Button */}
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-800">Inventory Management</h1>
             <Button onClick={() => setShowProductModal(true)}>+ Add Product</Button>
           </div>
 
-          {/* Low Stock Alerts (Fixed, won't scroll away) */}
           {lowStockProducts.length > 0 && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm max-h-24 overflow-y-auto">
               <h3 className="font-semibold text-red-800 flex items-center gap-2 sticky top-0 bg-red-50">
@@ -272,7 +301,6 @@ export const InventoryPage: React.FC = () => {
             </div>
           )}
 
-          {/* Search & Filter Controls */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
               <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
@@ -284,6 +312,17 @@ export const InventoryPage: React.FC = () => {
                 className="w-full pl-10 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="px-4 py-2 border border-gray-300 rounded-lg bg-white"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active Only</option>
+              <option value="disabled">Disabled Only</option>
+            </select>
+
             <select
               value={selectedCategory || ''}
               onChange={(e) => setSelectedCategory(e.target.value ? Number(e.target.value) : null)}
@@ -299,10 +338,8 @@ export const InventoryPage: React.FC = () => {
           </div>
         </div>
 
-        {/* ----------------- SCROLLABLE TABLE SECTION ----------------- */}
         <div className="flex-1 overflow-y-auto bg-gray-50">
           <table className="min-w-full divide-y divide-gray-200">
-            {/* Sticky Table Header */}
             <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
@@ -326,8 +363,13 @@ export const InventoryPage: React.FC = () => {
               ) : (
                 products.map((product) => {
                   const totalUnitPrice = (product.unit_price || 0) * product.stock;
+
+                  // LOGIC: Check if it should be marked as out of stock visually
+                  const isOutOfStock = product.stock <= 0;
+                  const isActive = product.is_active && !isOutOfStock;
+
                   return (
-                    <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={product.id} className={`hover:bg-gray-50 transition-colors ${!isActive ? 'opacity-60 bg-gray-50' : ''}`}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="font-medium text-gray-900">{product.name}</div>
                         {product.size && <div className="text-xs text-gray-500">Size: {product.size}</div>}
@@ -350,54 +392,58 @@ export const InventoryPage: React.FC = () => {
                         {product.unit_price ? formatCurrency(product.unit_price) : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`font-mono font-bold ${product.stock <= product.low_stock_threshold ? 'text-red-600' : 'text-gray-700'}`}>
+                        <span className={`font-mono font-bold ${isOutOfStock ? 'text-red-700' : product.stock <= product.low_stock_threshold ? 'text-orange-600' : 'text-gray-700'}`}>
                           {product.stock}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">
                         {product.unit_price ? formatCurrency(totalUnitPrice) : '-'}
                       </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${product.stock > product.low_stock_threshold
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
-                          }`}
-                      >
-                        {product.stock > product.low_stock_threshold ? 'In Stock' : 'Low Stock'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedProduct(product);
-                            setShowStockModal(true);
-                          }}
-                          title="Add Stock"
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${isActive && product.stock > product.low_stock_threshold
+                            ? 'bg-green-100 text-green-700'
+                            : isOutOfStock
+                              ? 'bg-red-200 text-red-800'
+                              : !product.is_active
+                                ? 'bg-gray-200 text-gray-700'
+                                : 'bg-orange-100 text-orange-700'
+                            }`}
                         >
-                          +
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => handleEditProduct(product)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="danger"
-                          onClick={() => handleDeleteProduct(product)}
-                          disabled={loading}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
+                          {isOutOfStock ? 'OUT OF STOCK' : !product.is_active ? 'Disabled' : product.stock > product.low_stock_threshold ? 'In Stock' : 'Low Stock'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedProduct(product);
+                              setShowStockModal(true);
+                            }}
+                            title="Add Stock"
+                          >
+                            +
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleEditProduct(product)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={product.is_active ? "danger" : "outline"}
+                            onClick={() => handleToggleStatus(product)}
+                            disabled={loading}
+                          >
+                            {product.is_active ? 'Disable' : 'Enable'}
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
                   );
                 })
               )}
@@ -406,7 +452,7 @@ export const InventoryPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ----------------- MODALS (Unchanged) ----------------- */}
+      {/* MODALS REMAIN THE SAME */}
       <Modal
         isOpen={showProductModal}
         onClose={() => {
@@ -556,7 +602,6 @@ export const InventoryPage: React.FC = () => {
         </div>
       </Modal>
 
-      {/* Add Stock Modal */}
       <Modal
         isOpen={showStockModal}
         onClose={() => {

@@ -22,7 +22,7 @@ export const generateReceipt = (order: Order): string => {
   const receipt = `
 ==========================================
                  RECEIPT
-               FilSync POS
+  Filamer Christian University Enterprise
 ==========================================
 Order #: ${order.order_number}
 Date: ${new Date(order.created_at).toLocaleString()}

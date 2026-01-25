@@ -37,7 +37,7 @@ export const LoginPage: React.FC = () => {
             alt="Logo"
             className="w-15 h-15 object-contain mx-auto" // Adjust size as needed
           />
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">FilSync POS</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">EnterpriseSync</h1>
           <p className="text-gray-500">Sign in to your account</p>
         </div>
 

@@ -45,7 +45,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             src={LogoImg}
             alt="Logo"
             className="w-10 h-10 object-contain brightness-110 shadow-sm" />
-          <h1 className="text-xl font-bold tracking-tight">FilSync <span className="text-blue-300">POS</span></h1>
+          <h1 className="text-xl font-bold tracking-tight">EnterpriseSync <span className="text-blue-300"></span></h1>
         </div>
 
         <nav className="mt-6 flex-1 px-3 space-y-1">
