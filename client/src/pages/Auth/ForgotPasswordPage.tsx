@@ -4,6 +4,7 @@ import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { authService } from '../../services/authService';
 import LogoImg from '../../assets/Filamer.png';
+import BgImg from '../../assets/fcu-background.png';
 
 export const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -26,7 +27,7 @@ export const ForgotPasswordPage: React.FC = () => {
       const response = await authService.forgotPassword({ email });
       setSuccess(response.message);
       setStep('reset');
-      
+
       // Development mode: Show OTP if returned (only in debug mode)
       if (response.otp) {
         setSuccess(`Password reset code sent! ${response.debug_note || ''} Your reset code: ${response.otp}`);
@@ -101,8 +102,13 @@ export const ForgotPasswordPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-200 flex items-center justify-center p-4">
-      <div className="bg-blue-100 border border-gray-300 rounded-lg shadow-2xl p-8 w-full max-w-md">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4 relative overflow-hidden">
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat scale-110 blur-sm"
+        style={{ backgroundImage: `url(${BgImg})` }}
+      />
+      <div className="absolute inset-0 bg-black/50 z-10"></div>
+      <div className="bg-white/95 backdrop-blur-sm border border-gray-300 rounded-xl shadow-2xl p-8 w-full max-w-md relative z-20">
         <div className="text-center mb-8">
           <img
             src={LogoImg}

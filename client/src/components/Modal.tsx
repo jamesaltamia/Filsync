@@ -36,7 +36,7 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
       <div
         className={`bg-white rounded-lg shadow-xl ${sizeStyles[size]} w-full m-4 max-h-[90vh] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}

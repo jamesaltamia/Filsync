@@ -121,10 +121,19 @@ export const ReportsPage: React.FC = () => {
     let csv = '';
     let filename = '';
 
+    // Helper to format numbers with commas and wrap in quotes for CSV safety
+    const fNum = (num: number | string) => {
+      const formatted = Number(num).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      return `"${formatted}"`;
+    };
+
     if (reportType === 'items') {
       csv = 'Product,Category,Quantity,Unit Price,Revenue,Total Unit Cost\n';
       itemSales.forEach(i => {
-        csv += `"${i.product.name}","${i.product.category?.name || 'N/A'}",${i.total_quantity},${i.product.unit_price || 0},${i.total_revenue},${i.total_unit_cost}\n`;
+        csv += `"${i.product.name}","${i.product.category?.name || 'N/A'}",${i.total_quantity},${fNum(i.product.unit_price || 0)},${fNum(i.total_revenue)},${fNum(i.total_unit_cost)}\n`;
       });
       filename = 'item-sales.csv';
     }
@@ -132,16 +141,15 @@ export const ReportsPage: React.FC = () => {
     else if (reportType === 'credit') {
       csv = 'Teacher,Total Credit\n';
       creditSales.forEach(c => {
-        csv += `"${c.teacher_name}",${c.total}\n`;
+        csv += `"${c.teacher_name}",${fNum(c.total)}\n`;
       });
       filename = 'credit-sales.csv';
     }
 
     else if (reportType === 'canteen') {
-      // UPDATED: Use filteredCanteenBills here
       csv = 'Tenant,Stall,Location,Month,Status,Amount\n';
       filteredCanteenBills.forEach(b => {
-        csv += `"${b.tenant?.name}","${b.tenant?.stall?.name}","${b.tenant?.stall?.location}","${b.month_year}","${b.status}",${b.amount}\n`;
+        csv += `"${b.tenant?.name}","${b.tenant?.stall?.name}","${b.tenant?.stall?.location}","${b.month_year}","${b.status}",${fNum(b.amount)}\n`;
       });
       filename = `canteen-report-${filterLocation === 'All' ? 'all' : filterLocation.toLowerCase().replace(/\s/g, '-')}.csv`;
     }
@@ -150,13 +158,13 @@ export const ReportsPage: React.FC = () => {
       csv =
         `Metric,Value\n` +
         `Total Orders,${dailyData.total_orders}\n` +
-        `Total Revenue,${dailyData.total_revenue}\n` +
-        `Total Unit Cost,${dailyData.total_unit_cost || 0}\n` +
+        `Total Revenue,${fNum(dailyData.total_revenue)}\n` +
+        `Total Unit Cost,${fNum(dailyData.total_unit_cost || 0)}\n` +
         `Total Items Sold,${dailyData.total_items || 0}\n`;
       filename = `${reportType}-sales.csv`;
     }
 
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = filename;

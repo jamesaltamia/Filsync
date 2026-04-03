@@ -13,71 +13,74 @@ import { CustomersPage } from './pages/Customers/CustomersPage';
 import { ReportsPage } from './pages/Reports/ReportsPage';
 import { SettingsPage } from './pages/Settings/SettingsPage';
 import { CanteenPage } from './pages/Canteen/CanteenPage';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <ThemeProvider>
+        <AuthProvider>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-          {/* Protected routes wrapped in MainLayout */}
-          <Route
-            path="/*"
-            element={
-              <ProtectedRoute>
-                <MainLayout>
-                  <Routes>
-                    <Route path="/" element={<DashboardPage />} />
-                    
-                    {/* Admin only routes */}
-                    <Route
-                      path="/inventory"
-                      element={
-                        <ProtectedRoute allowedRoles={['admin']}>
-                          <InventoryPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/canteen"
-                      element={
-                        <ProtectedRoute allowedRoles={['admin']}>
-                          <CanteenPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/customers"
-                      element={
-                        <ProtectedRoute allowedRoles={['admin']}>
-                          <CustomersPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/settings"
-                      element={
-                        <ProtectedRoute allowedRoles={['admin']}>
-                          <SettingsPage />
-                        </ProtectedRoute>
-                      }
-                    />
+            {/* Protected routes wrapped in MainLayout */}
+            <Route
+              path="/*"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Routes>
+                      <Route path="/" element={<DashboardPage />} />
 
-                    {/* Admin and Cashier routes */}
-                    <Route path="/sales" element={<SalesPage />} />
-                    <Route path="/orders" element={<OrdersHistoryPage />} />
-                    <Route path="/reports" element={<ReportsPage />} />
-                  </Routes>
-                </MainLayout>
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </AuthProvider>
+                      {/* Admin only routes */}
+                      <Route
+                        path="/inventory"
+                        element={
+                          <ProtectedRoute allowedRoles={['admin']}>
+                            <InventoryPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/canteen"
+                        element={
+                          <ProtectedRoute allowedRoles={['admin']}>
+                            <CanteenPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/customers"
+                        element={
+                          <ProtectedRoute allowedRoles={['admin']}>
+                            <CustomersPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/settings"
+                        element={
+                          <ProtectedRoute allowedRoles={['admin']}>
+                            <SettingsPage />
+                          </ProtectedRoute>
+                        }
+                      />
+
+                      {/* Admin and Cashier routes */}
+                      <Route path="/sales" element={<SalesPage />} />
+                      <Route path="/orders" element={<OrdersHistoryPage />} />
+                      <Route path="/reports" element={<ReportsPage />} />
+                    </Routes>
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </AuthProvider>
+      </ThemeProvider>
     </Router>
   );
 }

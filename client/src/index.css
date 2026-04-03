@@ -1,11 +1,31 @@
 @import "tailwindcss";
 
+/* 1. DARK MODE CONFIGURATION (Crucial for Toggle) */
+/* This must be OUTSIDE the print media query to work in the browser */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand-blue: #0a318e;
+}
+
+/* 2. GLOBAL BASE STYLES */
+@layer base {
+  body {
+    @apply bg-gray-50 text-slate-900 antialiased transition-colors duration-300;
+  }
+
+  /* Force text to slate-100 when the .dark class is on the <html> tag */
+  .dark body {
+    @apply bg-slate-950 text-slate-100;
+  }
+}
+
 /* Print styles */
 @media print {
   body {
     background: white;
   }
-  
+
   /* Hide everything except the report content */
   nav,
   header,
@@ -14,32 +34,32 @@
   .no-print {
     display: none !important;
   }
-  
+
   /* Ensure proper page breaks */
   table {
     page-break-inside: auto;
   }
-  
+
   tr {
     page-break-inside: avoid;
     page-break-after: auto;
   }
-  
+
   thead {
     display: table-header-group;
   }
-  
+
   tfoot {
     display: table-footer-group;
   }
-  
+
   /* Remove shadows and borders for cleaner print */
   .shadow-md,
   .shadow-lg,
   .shadow-xl {
     box-shadow: none !important;
   }
-  
+
   /* Optimize colors for printing */
   * {
     color-adjust: exact;

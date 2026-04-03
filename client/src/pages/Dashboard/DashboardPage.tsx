@@ -218,38 +218,24 @@ export const DashboardPage: React.FC = () => {
       {/* Recent Orders */}
       <Card title="Recent Orders">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+            <thead className="bg-gray-50 dark:bg-slate-800">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Order #
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Customer
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Total
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Date
-                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Order #</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Customer</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Total</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Date</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-800">
               {data?.recent_orders.map((order) => (
-                <tr key={order.id}>
-                  <td className="px-4 py-3 text-sm">{order.order_number}</td>
-                  <td className="px-4 py-3 text-sm">
-                    {order.customer
-                      ? `${order.customer.first_name} ${order.customer.last_name}`
-                      : 'Walk-in'}
+                <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <td className="px-4 py-3 text-sm dark:text-slate-300">{order.order_number}</td>
+                  <td className="px-4 py-3 text-sm dark:text-slate-300">
+                    {order.customer ? `${order.customer.first_name} ${order.customer.last_name}` : 'Walk-in'}
                   </td>
-                  <td className="px-4 py-3 text-sm font-medium">
-                    {formatCurrency(order.total)}
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    {new Date(order.created_at).toLocaleString()}
-                  </td>
+                  <td className="px-4 py-3 text-sm font-medium text-slate-900 dark:text-white">{formatCurrency(order.total)}</td>
+                  <td className="px-4 py-3 text-sm dark:text-slate-400">{new Date(order.created_at).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -259,4 +245,3 @@ export const DashboardPage: React.FC = () => {
     </div>
   );
 };
-

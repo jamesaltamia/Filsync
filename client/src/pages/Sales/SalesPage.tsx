@@ -279,7 +279,7 @@ export const SalesPage: React.FC = () => {
                   await handleBarcodeScan(barcode);
                 }
               }}
-              placeholder={isScanning ? "⏳ Scanning..." : "📷 Scan barcode here..."}
+              placeholder={isScanning ? "⏳ Scanning..." : "Scan barcode here..."}
               className="w-full px-4 py-2 border-2 border-dashed border-green-400 bg-green-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-center font-mono text-lg"
               autoFocus
             />
@@ -302,8 +302,8 @@ export const SalesPage: React.FC = () => {
                 <button
                   onClick={() => setSelectedCategory(null)}
                   className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm font-medium transition-colors ${selectedCategory === null
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                 >
                   All
@@ -313,8 +313,8 @@ export const SalesPage: React.FC = () => {
                     key={category.id}
                     onClick={() => setSelectedCategory(category.id)}
                     className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm font-medium transition-colors ${selectedCategory === category.id
-                        ? 'bg-green-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                   >
                     {category.name}
@@ -419,8 +419,8 @@ export const SalesPage: React.FC = () => {
                 <button
                   onClick={() => setPaymentMethod('cash')}
                   className={`flex-1 py-1.5 rounded text-sm font-medium border ${paymentMethod === 'cash'
-                      ? 'bg-green-100 text-green-700 border-green-300'
-                      : 'bg-white text-gray-600 border-gray-200'
+                    ? 'bg-green-100 text-green-700 border-green-300'
+                    : 'bg-white text-gray-600 border-gray-200'
                     }`}
                 >
                   Cash
@@ -428,8 +428,8 @@ export const SalesPage: React.FC = () => {
                 <button
                   onClick={() => setPaymentMethod('credit')}
                   className={`flex-1 py-1.5 rounded text-sm font-medium border ${paymentMethod === 'credit'
-                      ? 'bg-yellow-100 text-yellow-700 border-yellow-300'
-                      : 'bg-white text-gray-600 border-gray-200'
+                    ? 'bg-yellow-100 text-yellow-700 border-yellow-300'
+                    : 'bg-white text-gray-600 border-gray-200'
                     }`}
                 >
                   Credit
