@@ -48,6 +48,9 @@ class InventoryController extends Controller
         if ($request->has('is_active')) {
             $request->merge(['is_active' => filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true]);
         }
+        if ($request->has('is_for_sale')) {
+            $request->merge(['is_for_sale' => filter_var($request->is_for_sale, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true]);
+        }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -63,6 +66,7 @@ class InventoryController extends Controller
             'supplier' => 'nullable|string|max:255',
             'supplier_date' => 'nullable|date',
             'is_active' => 'nullable|boolean',
+            'is_for_sale' => 'nullable|boolean',
         ]);
 
         if ($request->hasFile('image')) {
@@ -88,6 +92,9 @@ class InventoryController extends Controller
         if ($request->has('is_active')) {
             $request->merge(['is_active' => filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $product->is_active]);
         }
+        if ($request->has('is_for_sale')) {
+            $request->merge(['is_for_sale' => filter_var($request->is_for_sale, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $product->is_for_sale]);
+        }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -103,6 +110,7 @@ class InventoryController extends Controller
             'supplier' => 'nullable|string|max:255',
             'supplier_date' => 'nullable|date',
             'is_active' => 'nullable|boolean',
+            'is_for_sale' => 'nullable|boolean',
         ]);
 
         if ($request->hasFile('image')) {

@@ -74,7 +74,7 @@ class SettingsController extends Controller
         $validated = $request->validate([
             'settings' => 'required|array',
             'settings.*.key' => 'required|string',
-            'settings.*.value' => 'required',
+            'settings.*.value' => 'nullable',
             'settings.*.type' => 'nullable|in:string,number,boolean,json',
         ]);
 

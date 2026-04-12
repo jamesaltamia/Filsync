@@ -23,6 +23,7 @@ export type Product = {
   supplier?: string;
   supplier_date?: string;
   is_active: boolean;
+  is_for_sale: boolean;
   created_at: string;
   updated_at: string;
 };

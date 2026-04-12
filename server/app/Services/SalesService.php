@@ -21,9 +21,16 @@ class SalesService
                 $itemSubtotal = $product->price * $item['quantity'];
                 $subtotal += $itemSubtotal;
 
-                // Check stock availability
-                if ($product->stock < $item['quantity']) {
-                    throw new \Exception("Insufficient stock for {$product->name}. Available: {$product->stock}");
+                // Check stock availability based on settings
+                $preventSaleIfZero = \App\Models\Setting::getValue('prevent_sale_if_stock_zero', true);
+                $allowNegativeStock = \App\Models\Setting::getValue('allow_negative_stock', false);
+
+                if (!$allowNegativeStock) {
+                    if ($product->stock < $item['quantity']) {
+                        throw new \Exception("Insufficient stock for {$product->name}. Available: {$product->stock}");
+                    }
+                } elseif ($preventSaleIfZero && $product->stock <= 0) {
+                    throw new \Exception("{$product->name} is out of stock and settings prevent selling zero stock items.");
                 }
 
                 $items[] = [

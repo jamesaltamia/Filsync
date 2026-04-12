@@ -204,11 +204,11 @@ export const CanteenPage: React.FC = () => {
     if (loading) return <div className="p-10 text-center text-gray-500">Loading Canteen Module...</div>;
 
     return (
-        <div className="h-[calc(100vh-6rem)] flex flex-col p-6 space-y-6 overflow-hidden bg-gray-50/50">
+        <div className="h-[calc(100vh-6rem)] flex flex-col p-6 space-y-6 overflow-hidden bg-gray-50/50 dark:bg-slate-900">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl font-bold text-gray-800">Canteen Management</h1>
-                    <p className="text-xs text-gray-500">Manage Stalls, Tenants and Billings</p>
+                    <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Canteen Management</h1>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">Manage Stalls, Tenants and Billings</p>
                 </div>
 
                 <div className="flex gap-3 items-center">
@@ -216,7 +216,7 @@ export const CanteenPage: React.FC = () => {
                         <select
                             value={filterLocation}
                             onChange={(e) => setFilterLocation(e.target.value)}
-                            className="appearance-none bg-white border border-gray-300 text-gray-700 py-1.5 pl-3 pr-8 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+                            className="appearance-none bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-200 py-1.5 pl-3 pr-8 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                         >
                             <option value="All">All Locations</option>
                             {CANTEEN_LOCATIONS.map(loc => (
@@ -228,12 +228,12 @@ export const CanteenPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex bg-gray-200 p-1 rounded-lg">
+                    <div className="flex bg-gray-200 dark:bg-slate-700 p-1 rounded-lg">
                         {(['dashboard', 'stalls', 'billing'] as const).map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`px-4 py-1.5 rounded-md text-sm font-medium capitalize transition-all ${activeTab === tab ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                                className={`px-4 py-1.5 rounded-md text-sm font-medium capitalize transition-all ${activeTab === tab ? 'bg-white dark:bg-slate-800 shadow text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'}`}
                             >
                                 {tab}
                             </button>
@@ -253,8 +253,8 @@ export const CanteenPage: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <div className="lg:col-span-2 bg-white p-5 rounded-xl border shadow-sm">
-                                <h3 className="font-bold text-gray-700 mb-4">Collection Trend ({filterLocation === 'All' ? 'Overall' : filterLocation})</h3>
+                            <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-5 rounded-xl border dark:border-slate-700 shadow-sm">
+                                <h3 className="font-bold text-gray-700 dark:text-slate-200 mb-4">Collection Trend ({filterLocation === 'All' ? 'Overall' : filterLocation})</h3>
                                 <div className="h-[300px] w-full">
                                     <ResponsiveContainer width="100%" height={300}>
                                         <LineChart data={lineData}>
@@ -268,8 +268,8 @@ export const CanteenPage: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="bg-white p-5 rounded-xl border shadow-sm flex flex-col items-center">
-                                <h3 className="font-bold text-gray-700 mb-4 self-start">Stall Availability</h3>
+                            <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border dark:border-slate-700 shadow-sm flex flex-col items-center">
+                                <h3 className="font-bold text-gray-700 dark:text-slate-200 mb-4 self-start">Stall Availability</h3>
                                 <div className="h-64 w-full">
                                     <ResponsiveContainer width="100%" height={260}>
                                         <PieChart>
@@ -285,8 +285,8 @@ export const CanteenPage: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="lg:col-span-2 bg-white p-5 rounded-xl border shadow-sm">
-                                <h3 className="font-bold text-gray-700 mb-4">Revenue by Stall</h3>
+                            <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-5 rounded-xl border dark:border-slate-700 shadow-sm">
+                                <h3 className="font-bold text-gray-700 dark:text-slate-200 mb-4">Revenue by Stall</h3>
                                 <div className="h-64">
                                     <ResponsiveContainer width="100%" height={260}>
                                         <BarChart data={barData}>
@@ -300,21 +300,21 @@ export const CanteenPage: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="bg-white p-5 rounded-xl border shadow-sm overflow-hidden">
-                                <h3 className="font-bold text-red-600 mb-4 flex items-center gap-2">
+                            <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border dark:border-slate-700 shadow-sm overflow-hidden">
+                                <h3 className="font-bold text-red-600 dark:text-red-400 mb-4 flex items-center gap-2">
                                     <span>⚠️</span> Pending Collections
                                 </h3>
-                                <div className="space-y-3 max-h-64 overflow-y-auto">
+                                <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
                                     {stats.unpaid.length === 0 ? (
-                                        <p className="text-gray-400 text-sm italic">All bills are settled.</p>
+                                        <p className="text-gray-400 dark:text-slate-500 text-sm italic">All bills are settled.</p>
                                     ) : (
                                         stats.unpaid.map(bill => (
-                                            <div key={bill.id} className="p-3 bg-red-50 rounded-lg border border-red-100 flex justify-between items-center">
+                                            <div key={bill.id} className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-800 flex justify-between items-center">
                                                 <div>
-                                                    <p className="text-sm font-bold text-gray-800">{bill.tenant?.name}</p>
-                                                    <p className="text-xs text-gray-500">{bill.tenant?.stall?.name}</p>
+                                                    <p className="text-sm font-bold text-gray-800 dark:text-slate-200">{bill.tenant?.name}</p>
+                                                    <p className="text-xs text-gray-500 dark:text-slate-400">{bill.tenant?.stall?.name}</p>
                                                 </div>
-                                                <span className="text-sm font-bold text-red-600">{formatCurrency(Number(bill.amount))}</span>
+                                                <span className="text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(Number(bill.amount))}</span>
                                             </div>
                                         ))
                                     )}
@@ -351,15 +351,15 @@ export const CanteenPage: React.FC = () => {
                 )}
 
                 {activeTab === 'billing' && (
-                    <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border dark:border-slate-700 overflow-hidden">
                         {/* UPDATED: Billing Filter Toolbar */}
-                        <div className="p-4 border-b bg-gray-50 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                        <div className="p-4 border-b dark:border-slate-700 bg-gray-50 dark:bg-slate-900/50 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                                <h3 className="font-bold text-gray-700 hidden md:block">Collections</h3>
+                                <h3 className="font-bold text-gray-700 dark:text-slate-200 hidden md:block">Collections</h3>
 
                                 {/* Search Bar */}
                                 <div className="relative flex-1 min-w-[200px] md:w-64">
-                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400 text-xs">
+                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400 dark:text-slate-500 text-xs">
                                         🔍
                                     </span>
                                     <input
@@ -367,7 +367,7 @@ export const CanteenPage: React.FC = () => {
                                         placeholder="Search month or tenant..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="block w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+                                        className="block w-full pl-9 pr-3 py-1.5 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 dark:text-slate-200 shadow-sm"
                                     />
                                 </div>
 
@@ -375,7 +375,7 @@ export const CanteenPage: React.FC = () => {
                                 <select
                                     value={filterStatus}
                                     onChange={(e) => setFilterStatus(e.target.value)}
-                                    className="bg-white border border-gray-300 text-gray-700 py-1.5 pl-3 pr-8 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm appearance-none"
+                                    className="bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-200 py-1.5 pl-3 pr-8 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm appearance-none"
                                     style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2020%2020'%20fill='currentColor'%3E%3Cpath%20fill-rule='evenodd'%20d='M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z'%20clip-rule='evenodd'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.2em' }}
                                 >
                                     <option value="All">All Status</option>
@@ -391,7 +391,7 @@ export const CanteenPage: React.FC = () => {
 
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm text-left">
-                                <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-b">
+                                <thead className="text-xs text-gray-500 dark:text-slate-400 uppercase bg-gray-50 dark:bg-slate-900/50 border-b dark:border-slate-700">
                                     <tr>
                                         <th className="px-4 py-3">Status</th>
                                         <th className="px-4 py-3">Tenant / Stall</th>
@@ -403,7 +403,7 @@ export const CanteenPage: React.FC = () => {
                                 </thead>
                                 <tbody>
                                     {filteredBills.map(bill => (
-                                        <tr key={bill.id} className="border-b hover:bg-gray-50 transition">
+                                        <tr key={bill.id} className="border-b dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition text-gray-800 dark:text-slate-200">
                                             <td className="px-4 py-3">
                                                 <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${bill.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                                     {bill.status.toUpperCase()}
@@ -411,10 +411,10 @@ export const CanteenPage: React.FC = () => {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <div className="font-bold">{bill.tenant?.name || 'N/A'}</div>
-                                                <div className="text-xs text-gray-400">{bill.tenant?.stall?.name}</div>
+                                                <div className="text-xs text-gray-400 dark:text-slate-400">{bill.tenant?.stall?.name}</div>
                                             </td>
-                                            <td className="px-4 py-3 text-xs text-gray-600">{bill.tenant?.stall?.location}</td>
-                                            <td className="px-4 py-3 text-gray-600">{bill.month_year}</td>
+                                            <td className="px-4 py-3 text-xs text-gray-600 dark:text-slate-400">{bill.tenant?.stall?.location}</td>
+                                            <td className="px-4 py-3 text-gray-600 dark:text-slate-400">{bill.month_year}</td>
                                             <td className="px-4 py-3 text-right font-bold">{formatCurrency(Number(bill.amount))}</td>
                                             <td className="px-4 py-3 text-center">
                                                 {bill.status === 'unpaid' ? (
@@ -438,11 +438,11 @@ export const CanteenPage: React.FC = () => {
                                 </tbody>
                             </table>
                             {filteredBills.length === 0 && (
-                                <div className="text-center p-12 bg-white flex flex-col items-center">
-                                    <p className="text-gray-400 text-lg">No records found matching your criteria.</p>
+                                <div className="text-center p-12 bg-white dark:bg-slate-800 flex flex-col items-center">
+                                    <p className="text-gray-400 dark:text-slate-500 text-lg">No records found matching your criteria.</p>
                                     <button
                                         onClick={() => { setSearchQuery(''); setFilterStatus('All'); }}
-                                        className="text-blue-500 text-sm hover:underline mt-2"
+                                        className="text-blue-500 dark:text-blue-400 text-sm hover:underline mt-2"
                                     >
                                         Clear search and filters
                                     </button>
@@ -569,31 +569,31 @@ export const CanteenPage: React.FC = () => {
 
 // --- SUB-COMPONENTS ---
 const DashboardCard = ({ title, value, icon, color }: any) => (
-    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-4">
+    <div className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex items-center space-x-4">
         <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl ${color}`}>{icon}</div>
         <div>
-            <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">{title}</p>
-            <p className="text-2xl font-black text-gray-800">{value}</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500 uppercase font-bold tracking-wider">{title}</p>
+            <p className="text-2xl font-black text-gray-800 dark:text-white">{value}</p>
         </div>
     </div>
 );
 
 const StallCard = ({ stall, onAssign, onEdit, onDelete }: any) => (
-    <div className="bg-white border rounded-xl p-5 shadow-sm relative overflow-hidden transition-hover hover:shadow-md">
+    <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-5 shadow-sm relative overflow-hidden transition-hover hover:shadow-md">
         <div className="absolute top-2 right-2 flex space-x-1">
-            <button onClick={onEdit} className="p-1.5 bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600 rounded-md transition">✏️</button>
-            <button onClick={onDelete} className="p-1.5 bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 rounded-md transition">🗑️</button>
+            <button onClick={onEdit} className="p-1.5 bg-gray-100 dark:bg-slate-700 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-gray-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 rounded-md transition">✏️</button>
+            <button onClick={onDelete} className="p-1.5 bg-gray-100 dark:bg-slate-700 hover:bg-red-100 dark:hover:bg-red-900/50 text-gray-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 rounded-md transition">🗑️</button>
         </div>
-        <h3 className="font-bold text-lg text-gray-800">{stall.name}</h3>
-        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-500 mb-3 border">
+        <h3 className="font-bold text-lg text-gray-800 dark:text-white">{stall.name}</h3>
+        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-300 mb-3 border dark:border-slate-600">
             {stall.location}
         </span>
-        <p className="text-blue-600 font-black text-xl">{formatCurrency(Number(stall.monthly_rent))}</p>
-        <div className="mt-4 pt-4 border-t border-gray-50">
+        <p className="text-blue-600 dark:text-blue-400 font-black text-xl">{formatCurrency(Number(stall.monthly_rent))}</p>
+        <div className="mt-4 pt-4 border-t border-gray-50 dark:border-slate-600">
             {stall.status === 'occupied' ? (
                 <div>
-                    <p className="text-[10px] text-gray-400 uppercase font-bold">Current Tenant</p>
-                    <p className="font-bold text-gray-700">{stall.tenant?.name}</p>
+                    <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase font-bold">Current Tenant</p>
+                    <p className="font-bold text-gray-700 dark:text-slate-200">{stall.tenant?.name}</p>
                 </div>
             ) : (
                 <Button variant="outline" className="w-full py-1 text-xs" onClick={onAssign}>+ Assign Tenant</Button>

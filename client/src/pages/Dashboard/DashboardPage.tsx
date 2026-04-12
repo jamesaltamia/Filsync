@@ -115,17 +115,17 @@ export const DashboardPage: React.FC = () => {
             {data.low_stock_alerts.map((product) => (
               <div
                 key={product.id}
-                className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200"
+                className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800/30"
               >
                 <div>
-                  <p className="font-medium">{product.name}</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="font-medium text-red-900 dark:text-red-200">{product.name}</p>
+                  <p className="text-sm text-red-700 dark:text-red-300">
                     Stock: {product.stock} (Threshold: {product.low_stock_threshold})
                   </p>
                 </div>
                 <Link
                   to="/inventory"
-                  className="text-green-600 hover:text-green-700 font-medium"
+                  className="text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium"
                 >
                   Add Stock →
                 </Link>

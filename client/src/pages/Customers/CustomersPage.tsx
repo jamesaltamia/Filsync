@@ -175,7 +175,7 @@ export const CustomersPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Customer Management</h1>
+        <h1 className="text-2xl font-bold dark:text-white">Customer Management</h1>
         <div className="flex space-x-2">
           <Button variant="secondary" onClick={() => setShowStudentImportModal(true)}>
             📤 Upload Students
@@ -189,35 +189,35 @@ export const CustomersPage: React.FC = () => {
         placeholder="Search customers..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+        className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 dark:text-white"
       />
 
       {/* Students Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-800">Students</h2>
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
+        <div className="px-6 py-4 bg-gray-50 dark:bg-slate-900/50 border-b border-gray-200 dark:border-slate-700">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Students</h2>
         </div>
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+          <thead className="bg-gray-50 dark:bg-slate-900/50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Grade/Year level</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course/Strand</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">ID</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Grade/Year level</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Course/Strand</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
             {students.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-500 dark:text-slate-400">
                   No students found
                 </td>
               </tr>
             ) : (
               students.map((customer) => (
-                <tr key={customer.id}>
+                <tr key={customer.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 text-gray-800 dark:text-slate-200">
                   <td className="px-6 py-4 whitespace-nowrap">{customer.student_id || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {customer.first_name} {customer.last_name}
@@ -262,30 +262,30 @@ export const CustomersPage: React.FC = () => {
       </div>
 
       {/* Teachers Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-800">Teachers</h2>
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
+        <div className="px-6 py-4 bg-gray-50 dark:bg-slate-900/50 border-b border-gray-200 dark:border-slate-700">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Teachers</h2>
         </div>
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+          <thead className="bg-gray-50 dark:bg-slate-900/50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">ID</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Department</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
             {teachers.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={5} className="px-6 py-4 text-center text-gray-500 dark:text-slate-400">
                   No teachers found
                 </td>
               </tr>
             ) : (
               teachers.map((customer) => (
-                <tr key={customer.id}>
+                <tr key={customer.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 text-gray-800 dark:text-slate-200">
                   <td className="px-6 py-4 whitespace-nowrap">{customer.student_id || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {customer.first_name} {customer.last_name}
@@ -431,16 +431,16 @@ export const CustomersPage: React.FC = () => {
         title="Import Students from Excel"
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-slate-300">
             Upload an Excel file with columns: <strong>ID, NAME, GRADE/YEAR LEVEL, COURSE/STRAND, TYPE</strong>
             <br />
-            <span className="text-xs text-gray-500">Note: NAME should be the full name (first and last name together)</span>
+            <span className="text-xs text-gray-500 dark:text-slate-400">Note: NAME should be the full name (first and last name together)</span>
           </p>
           <input
             type="file"
             accept=".xlsx,.xls,.csv"
             onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg dark:text-white"
           />
           <div className="flex justify-end space-x-2">
             <Button
@@ -469,16 +469,16 @@ export const CustomersPage: React.FC = () => {
         title="Import Teachers from Excel"
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-slate-300">
             Upload an Excel file with columns: <strong>ID, NAME, DEPARTMENT, TYPE</strong>
             <br />
-            <span className="text-xs text-gray-500">Note: NAME should be the full name (first and last name together)</span>
+            <span className="text-xs text-gray-500 dark:text-slate-400">Note: NAME should be the full name (first and last name together)</span>
           </p>
           <input
             type="file"
             accept=".xlsx,.xls,.csv"
             onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg dark:text-white"
           />
           <div className="flex justify-end space-x-2">
             <Button

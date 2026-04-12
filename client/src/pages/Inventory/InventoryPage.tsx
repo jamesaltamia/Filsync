@@ -33,6 +33,7 @@ export const InventoryPage: React.FC = () => {
     supplier: '',
     supplier_date: '',
     is_active: true,
+    is_for_sale: true,
   });
   const [productImage, setProductImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -112,6 +113,7 @@ export const InventoryPage: React.FC = () => {
       // Auto-disable if creating with 0 stock
       const shouldBeActive = Number(productForm.stock) > 0 ? (productForm.is_active ? '1' : '0') : '0';
       formData.append('is_active', shouldBeActive);
+      formData.append('is_for_sale', productForm.is_for_sale ? '1' : '0');
 
       if (productImage) {
         formData.append('image', productImage);
@@ -155,6 +157,7 @@ export const InventoryPage: React.FC = () => {
       supplier: product.supplier || '',
       supplier_date: product.supplier_date || '',
       is_active: product.is_active,
+      is_for_sale: product.is_for_sale !== undefined ? product.is_for_sale : true,
     });
     setImagePreview(product.image || null);
     setProductImage(null);
@@ -248,6 +251,7 @@ export const InventoryPage: React.FC = () => {
       supplier: '',
       supplier_date: '',
       is_active: true,
+      is_for_sale: true,
     });
     setProductImage(null);
     setImagePreview(null);
@@ -269,25 +273,25 @@ export const InventoryPage: React.FC = () => {
 
   return (
     <div className="h-[calc(100vh-6rem)]">
-      <div className="bg-white rounded-lg shadow-md flex flex-col h-full overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md flex flex-col h-full overflow-hidden">
 
-        <div className="p-4 border-b bg-white z-10 space-y-4">
+        <div className="p-4 border-b dark:border-slate-700 bg-white dark:bg-slate-800 z-10 space-y-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-800">Inventory Management</h1>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Inventory Management</h1>
             <Button onClick={() => setShowProductModal(true)}>+ Add Product</Button>
           </div>
 
           {lowStockProducts.length > 0 && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm max-h-24 overflow-y-auto">
-              <h3 className="font-semibold text-red-800 flex items-center gap-2 sticky top-0 bg-red-50">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-lg p-3 text-sm max-h-24 overflow-y-auto">
+              <h3 className="font-semibold text-red-800 dark:text-red-200 flex items-center gap-2 sticky top-0 bg-red-50 dark:bg-red-900/1 py-1 -mt-1">
                 ⚠️ Low Stock Alerts ({lowStockProducts.length})
               </h3>
               <div className="mt-1 space-y-1">
                 {lowStockProducts.map((product) => (
-                  <div key={product.id} className="flex justify-between items-center text-red-700">
+                  <div key={product.id} className="flex justify-between items-center text-red-700 dark:text-red-300">
                     <span>{product.name} - Stock: {product.stock}</span>
                     <button
-                      className="underline text-xs hover:text-red-900"
+                      className="underline text-xs hover:text-red-900 dark:hover:text-red-100"
                       onClick={() => {
                         setSelectedProduct(product);
                         setShowStockModal(true);
@@ -316,7 +320,7 @@ export const InventoryPage: React.FC = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="px-4 py-2 border border-gray-300 rounded-lg bg-white"
+              className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 dark:text-white"
             >
               <option value="all">All Status</option>
               <option value="active">Active Only</option>
@@ -326,7 +330,7 @@ export const InventoryPage: React.FC = () => {
             <select
               value={selectedCategory || ''}
               onChange={(e) => setSelectedCategory(e.target.value ? Number(e.target.value) : null)}
-              className="px-4 py-2 border border-gray-300 rounded-lg bg-white"
+              className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 dark:text-white"
             >
               <option value="">All Categories</option>
               {categories.map((cat) => (
@@ -338,11 +342,11 @@ export const InventoryPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto bg-gray-50">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
+        <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-900/50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+            <thead className="bg-gray-50 dark:bg-slate-800/80 sticky top-0 z-10 shadow-sm">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Product Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
@@ -350,13 +354,13 @@ export const InventoryPage: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Unit Price</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
               {products.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-6 py-10 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-10 text-center text-gray-500 dark:text-slate-400">
                     No products found in inventory.
                   </td>
                 </tr>
@@ -369,34 +373,34 @@ export const InventoryPage: React.FC = () => {
                   const isActive = product.is_active && !isOutOfStock;
 
                   return (
-                    <tr key={product.id} className={`hover:bg-gray-50 transition-colors ${!isActive ? 'opacity-60 bg-gray-50' : ''}`}>
+                    <tr key={product.id} className={`hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors ${!isActive ? 'opacity-60 bg-gray-50 dark:bg-slate-800/50' : ''}`}>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-medium text-gray-900">{product.name}</div>
-                        {product.size && <div className="text-xs text-gray-500">Size: {product.size}</div>}
+                        <div className="font-medium text-gray-900 dark:text-slate-200">{product.name}</div>
+                        {product.size && <div className="text-xs text-gray-500 dark:text-slate-400">Size: {product.size}</div>}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">
                         {product.category?.name || 'N/A'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-slate-300">
                         {product.supplier || '-'}
                         {product.supplier_date && (
-                          <div className="text-xs text-gray-400">
+                          <div className="text-xs text-gray-400 dark:text-slate-500">
                             {new Date(product.supplier_date).toLocaleDateString()}
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-700">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-700 dark:text-slate-200">
                         {formatCurrency(product.price)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-slate-300">
                         {product.unit_price ? formatCurrency(product.unit_price) : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`font-mono font-bold ${isOutOfStock ? 'text-red-700' : product.stock <= product.low_stock_threshold ? 'text-orange-600' : 'text-gray-700'}`}>
+                        <span className={`font-mono font-bold ${isOutOfStock ? 'text-red-700 dark:text-red-400' : product.stock <= product.low_stock_threshold ? 'text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-slate-200'}`}>
                           {product.stock}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600 dark:text-blue-400">
                         {product.unit_price ? formatCurrency(totalUnitPrice) : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -412,6 +416,13 @@ export const InventoryPage: React.FC = () => {
                         >
                           {isOutOfStock ? 'OUT OF STOCK' : !product.is_active ? 'Disabled' : product.stock > product.low_stock_threshold ? 'In Stock' : 'Low Stock'}
                         </span>
+                        {product.is_for_sale === false && (
+                          <div className="mt-1 flex">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200" title="Hidden from POS">
+                              STOCK ONLY
+                            </span>
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
@@ -585,6 +596,38 @@ export const InventoryPage: React.FC = () => {
               </div>
             )}
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
+              Product Placement
+            </label>
+            <div className="flex space-x-4">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  checked={productForm.is_for_sale === true}
+                  onChange={() => setProductForm({ ...productForm, is_for_sale: true })}
+                  className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <span className="text-sm text-gray-700 dark:text-slate-300">Sale Item (Appears in POS)</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  checked={productForm.is_for_sale === false}
+                  onChange={() => setProductForm({ ...productForm, is_for_sale: false })}
+                  className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <span className="text-sm text-gray-700 dark:text-slate-300">Stock Only (Hidden from POS)</span>
+              </label>
+            </div>
+            <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+              {productForm.is_for_sale
+                ? "This item will be visible to cashiers for sale."
+                : "This item will only be tracked in inventory (e.g., ingredients, packaging, assets)."}
+            </p>
+          </div>
+
           <div className="flex justify-end space-x-2 pt-4 border-t">
             <Button
               variant="outline"

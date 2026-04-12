@@ -17,7 +17,9 @@ class SalesController extends Controller
 
     public function index(Request $request)
     {
-        $query = Product::with('category')->where('is_active', true);
+        $query = Product::with('category')
+                    ->where('is_active', true)
+                    ->where('is_for_sale', true);
 
         // Filter by category
         if ($request->has('category_id')) {
@@ -48,6 +50,7 @@ class SalesController extends Controller
         $product = Product::with('category')
             ->where('barcode', $barcode)
             ->where('is_active', true)
+            ->where('is_for_sale', true)
             ->first();
 
         if (!$product) {

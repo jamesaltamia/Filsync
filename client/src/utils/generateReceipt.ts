@@ -1,7 +1,14 @@
 import type { Order } from '../types/order';
 import { formatCurrency } from './formatCurrency';
 
-export const generateReceipt = (order: Order): string => {
+export interface ReceiptSettings {
+  receipt_header_text?: string;
+  receipt_footer_text?: string;
+  receipt_show_store_info?: boolean;
+  receipt_show_customer_info?: boolean;
+}
+
+export const generateReceipt = (order: Order, settings?: ReceiptSettings): string => {
   const paymentLine =
     order.payment_method === 'credit'
       ? order.status === 'pending'
@@ -19,15 +26,22 @@ export const generateReceipt = (order: Order): string => {
       ? `Change: ${formatCurrency(order.change_due)}`
       : '';
 
+  const headerText = settings?.receipt_show_store_info !== false 
+    ? (settings?.receipt_header_text || 'Filamer Christian University Enterprise')
+    : '';
+
+  const customerBlock = settings?.receipt_show_customer_info !== false
+    ? `${order.customer ? `Customer: ${order.customer.full_name || `${order.customer.first_name} ${order.customer.last_name}`}` : ''}\n${order.customer?.student_id ? `ID: ${order.customer.student_id}` : ''}`
+    : '';
+
   const receipt = `
 ==========================================
                  RECEIPT
-  Filamer Christian University Enterprise
+  ${headerText}
 ==========================================
 Order #: ${order.order_number}
 Date: ${new Date(order.created_at).toLocaleString()}
-${order.customer ? `Customer: ${order.customer.full_name || `${order.customer.first_name} ${order.customer.last_name}`}` : ''}
-${order.customer?.student_id ? `ID: ${order.customer.student_id}` : ''}
+${customerBlock}
 ------------------------------------------
 ITEMS:
 ${order.items?.map(item => {
@@ -42,15 +56,15 @@ ${cashLine}
 ${changeLine}
 Payment: ${paymentLine}
 ==========================================
-        Thank you for your purchase!
+        ${settings?.receipt_footer_text || 'Thank you for your purchase!'}
 ==========================================
   `.trim();
 
   return receipt;
 };
 
-export const printReceipt = (order: Order) => {
-  const receipt = generateReceipt(order);
+export const printReceipt = (order: Order, settings?: ReceiptSettings) => {
+  const receipt = generateReceipt(order, settings);
 
   const iframe = document.createElement('iframe');
 

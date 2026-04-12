@@ -56,36 +56,36 @@ export const OrdersHistoryPage: React.FC = () => {
   return (
     <div className="flex flex-col h-[calc(100vh-160px)] space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-slate-800">Orders History</h1>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Orders History</h1>
       </div>
 
       {/* SCROLLABLE TABLE CONTAINER */}
-      <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden">
+      <div className="flex-1 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 flex flex-col overflow-hidden">
         <div className="overflow-y-auto flex-1">
-          <table className="min-w-full divide-y divide-gray-200 table-auto">
-            <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700 table-auto">
+            <thead className="bg-gray-50 dark:bg-slate-900/50 sticky top-0 z-10 shadow-sm">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Order #</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Total</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-slate-300 uppercase tracking-wider">Order #</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-slate-300 uppercase tracking-wider">Customer</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-slate-300 uppercase tracking-wider">Total</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-slate-300 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-4 text-center text-xs font-bold text-gray-600 dark:text-slate-300 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-100 dark:divide-slate-700">
               {orders.length > 0 ? (
                 orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-blue-50/30 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap font-medium text-blue-700">#{order.order_number}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                  <tr key={order.id} className="hover:bg-blue-50/30 dark:hover:bg-slate-700/50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap font-medium text-blue-700 dark:text-blue-400">#{order.order_number}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-700 dark:text-slate-300">
                       {order.customer
                         ? `${order.customer.first_name} ${order.customer.last_name}`
-                        : <span className="text-gray-400 italic">Walk-in</span>}
+                        : <span className="text-gray-400 dark:text-slate-500 italic">Walk-in</span>}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap font-bold text-slate-900">
+                    <td className="px-6 py-4 whitespace-nowrap font-bold text-slate-900 dark:text-white">
                       {formatCurrency(order.total)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">
                       {new Date(order.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center space-x-2">
@@ -118,7 +118,7 @@ export const OrdersHistoryPage: React.FC = () => {
         </div>
 
         {/* FOOTER / PAGINATION BAR */}
-        <div className="bg-gray-50 border-t border-gray-200 px-6 py-3 flex justify-between items-center text-sm text-gray-500">
+        <div className="bg-gray-50 dark:bg-slate-900/50 border-t border-gray-200 dark:border-slate-700 px-6 py-3 flex justify-between items-center text-sm text-gray-500 dark:text-slate-400">
           <span>Showing {orders.length} orders</span>
         </div>
       </div>

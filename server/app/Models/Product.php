@@ -22,6 +22,7 @@ class Product extends Model
         'supplier',
         'supplier_date',
         'is_active',
+        'is_for_sale',
     ];
 
     protected $casts = [
@@ -31,6 +32,7 @@ class Product extends Model
         'low_stock_threshold' => 'integer',
         'supplier_date' => 'date',
         'is_active' => 'boolean',
+        'is_for_sale' => 'boolean',
     ];
 
     public function category(): BelongsTo

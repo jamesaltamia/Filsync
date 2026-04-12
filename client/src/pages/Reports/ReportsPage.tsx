@@ -193,7 +193,7 @@ export const ReportsPage: React.FC = () => {
     <div className="space-y-6">
       {/* HEADER */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Reports</h1>
+        <h1 className="text-2xl font-bold dark:text-white">Reports</h1>
         {showActions && (
           <div className="flex gap-2 print:hidden">
             <Button onClick={handlePrint} variant="outline">🖨️ Print Report</Button>
@@ -203,13 +203,13 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* CONTROLS */}
-      <div className="bg-white rounded-lg shadow-md p-6 print:hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 print:hidden">
         <div className="flex flex-wrap gap-2 mb-4">
           {['daily', 'monthly', 'yearly', 'items', 'credit', 'canteen'].map(t => (
             <button
               key={t}
               onClick={() => setReportType(t as any)}
-              className={`px-4 py-2 rounded-lg ${reportType === t ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
+              className={`px-4 py-2 rounded-lg ${reportType === t ? 'bg-green-600 text-white' : 'bg-gray-200 dark:bg-slate-700 dark:text-slate-300'}`}
             >
               {t === 'items' ? 'Item Sales' :
                 t === 'credit' ? 'Credit Sales (Teachers)' :
@@ -222,17 +222,17 @@ export const ReportsPage: React.FC = () => {
         <div className="flex flex-wrap gap-4 items-end">
           {reportType === 'daily' && (
             <input type="date" value={date} onChange={e => setDate(e.target.value)}
-              className="border px-4 py-2 rounded-lg" />
+              className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg" />
           )}
 
           {(reportType === 'monthly' || reportType === 'yearly') && (
             <div className="flex gap-2">
               <input type="number" value={year} onChange={e => setYear(+e.target.value)}
-                className="border px-4 py-2 rounded-lg" />
+                className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg" />
               {reportType === 'monthly' && (
                 <input type="number" min={1} max={12} value={month}
                   onChange={e => setMonth(+e.target.value)}
-                  className="border px-4 py-2 rounded-lg" />
+                  className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg" />
               )}
             </div>
           )}
@@ -241,11 +241,11 @@ export const ReportsPage: React.FC = () => {
           {reportType === 'items' && (
             <>
               <div className="flex flex-col gap-1">
-                <label className="text-sm text-gray-600 font-medium">Category</label>
+                <label className="text-sm text-gray-600 dark:text-slate-400 font-medium">Category</label>
                 <select
                   value={itemSalesCategory || ''}
                   onChange={(e) => setItemSalesCategory(e.target.value ? Number(e.target.value) : null)}
-                  className="border px-4 py-2 rounded-lg min-w-[200px]"
+                  className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg min-w-[200px]"
                 >
                   <option value="">All Categories</option>
                   {categories.map(cat => (
@@ -254,12 +254,12 @@ export const ReportsPage: React.FC = () => {
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-sm text-gray-600 font-medium">Date</label>
+                <label className="text-sm text-gray-600 dark:text-slate-400 font-medium">Date</label>
                 <input
                   type="date"
                   value={itemSalesDate}
                   onChange={(e) => setItemSalesDate(e.target.value)}
-                  className="border px-4 py-2 rounded-lg"
+                  className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg"
                 />
               </div>
             </>
@@ -268,11 +268,11 @@ export const ReportsPage: React.FC = () => {
           {/* NEW: Canteen Location Filter */}
           {reportType === 'canteen' && (
             <div className="flex flex-col gap-1">
-              <label className="text-sm text-gray-600 font-medium">Filter Location</label>
+              <label className="text-sm text-gray-600 dark:text-slate-400 font-medium">Filter Location</label>
               <select
                 value={filterLocation}
                 onChange={(e) => setFilterLocation(e.target.value)}
-                className="border px-4 py-2 rounded-lg min-w-[200px]"
+                className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg min-w-[200px]"
               >
                 <option value="All">All Locations</option>
                 {CANTEEN_LOCATIONS.map(loc => (
@@ -353,30 +353,30 @@ export const ReportsPage: React.FC = () => {
             </Card>
           </div>
           <Card title="Item Sales Report">
-            <div className="flex flex-col border border-gray-200 rounded-lg overflow-hidden">
+            <div className="flex flex-col border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden">
               <div className="overflow-y-auto max-h-[400px]">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50 sticky top-0 z-10">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                  <thead className="bg-gray-50 dark:bg-slate-900/50 sticky top-0 z-10">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Qty Sold</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Unit Price</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Revenue</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Unit Cost</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Product</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Category</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Qty Sold</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Unit Price</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Revenue</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Total Unit Cost</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
                     {itemSales.map((item, index) => (
-                      <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-800">{item.product.name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-600">{item.product.category?.name || 'N/A'}</td>
+                      <tr key={index} className="hover:bg-gray-50 dark:hover:bg-slate-700/50">
+                        <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-800 dark:text-slate-200">{item.product.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-slate-400">{item.product.category?.name || 'N/A'}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-center font-medium">{item.total_quantity}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-gray-600">
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-gray-600 dark:text-slate-400">
                           {item.product.unit_price ? formatCurrency(item.product.unit_price) : '-'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-green-600">{formatCurrency(item.total_revenue)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-orange-600">{formatCurrency(item.total_unit_cost)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-green-600 dark:text-green-400">{formatCurrency(item.total_revenue)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right font-semibold text-orange-600 dark:text-orange-400">{formatCurrency(item.total_unit_cost)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -415,20 +415,20 @@ export const ReportsPage: React.FC = () => {
               </div>
             </div>
           </Card>
-          <Card title="Credit Orders List" className="mt-6">
+          <Card title="Credit Orders List">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                <thead className="bg-gray-50 dark:bg-slate-900/50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teacher</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Action</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Order ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Teacher</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Date</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Amount</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Status</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Action</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
                   {creditSales.map((sale) => (
                     <tr key={sale.id}>
                       <td className="px-6 py-4">{sale.order_number}</td>
@@ -505,24 +505,24 @@ export const ReportsPage: React.FC = () => {
 
           <Card title={`Canteen Billing Details (${filterLocation})`}>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                <thead className="bg-gray-50 dark:bg-slate-900/50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tenant</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stall</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Month</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Tenant</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Stall</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Location</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Month</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Status</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Amount</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
                   {filteredCanteenBills.map(b => (
-                    <tr key={b.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium text-gray-900">{b.tenant?.name}</td>
-                      <td className="px-6 py-4 text-gray-600">{b.tenant?.stall?.name}</td>
-                      <td className="px-6 py-4 text-xs text-gray-500">{b.tenant?.stall?.location}</td>
-                      <td className="px-6 py-4 text-gray-600">{b.month_year}</td>
+                    <tr key={b.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50">
+                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-slate-200">{b.tenant?.name}</td>
+                      <td className="px-6 py-4 text-gray-600 dark:text-slate-400">{b.tenant?.stall?.name}</td>
+                      <td className="px-6 py-4 text-xs text-gray-500 dark:text-slate-500">{b.tenant?.stall?.location}</td>
+                      <td className="px-6 py-4 text-gray-600 dark:text-slate-400">{b.month_year}</td>
                       <td className="px-6 py-4 text-center">
                         <span className={`px-2 py-1 rounded-full text-xs font-bold ${b.status === 'paid'
                           ? 'bg-green-100 text-green-700'
@@ -531,7 +531,7 @@ export const ReportsPage: React.FC = () => {
                           {b.status.toUpperCase()}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right font-bold text-gray-700">
+                      <td className="px-6 py-4 text-right font-bold text-gray-700 dark:text-slate-300">
                         {formatCurrency(Number(b.amount))}
                       </td>
                     </tr>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { salesService } from '../../services/salesService';
 import { categoryService } from '../../services/inventoryService';
 import { customerService } from '../../services/customerService';
+import { settingsService } from '../../services/settingsService';
 import type { Product, Category } from '../../types/product';
 import type { Customer } from '../../types/customer';
 import type { OrderItem } from '../../types/order';
@@ -34,10 +35,28 @@ export const SalesPage: React.FC = () => {
   const [isScanning, setIsScanning] = useState(false);
   const barcodeInputRef = useRef<HTMLInputElement>(null);
 
+  const [receiptSettings, setReceiptSettings] = useState<any>({});
+
   useEffect(() => {
     fetchProducts();
     fetchCategories();
+    fetchReceiptSettings();
   }, []);
+
+  const fetchReceiptSettings = async () => {
+    try {
+      const keys = [
+        'receipt_header_text',
+        'receipt_footer_text',
+        'receipt_show_store_info',
+        'receipt_show_customer_info'
+      ];
+      const settings = await settingsService.getByKeys(keys);
+      setReceiptSettings(settings);
+    } catch (error) {
+      console.error('Error fetching receipt settings:', error);
+    }
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -235,7 +254,7 @@ export const SalesPage: React.FC = () => {
         ...order,
         cash_tendered: cashValue,
         change_due: changeValue,
-      });
+      }, receiptSettings);
 
       // Clear cart and customer
       setCart([]);
@@ -259,11 +278,11 @@ export const SalesPage: React.FC = () => {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-6rem)]">
 
       {/* ----------------- LEFT: PRODUCT CATALOG ----------------- */}
-      <div className="lg:col-span-2 bg-white rounded-lg shadow-md flex flex-col h-full overflow-hidden">
+      <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-lg shadow-md flex flex-col h-full overflow-hidden">
 
         {/* Fixed Header Section (Does not scroll) */}
-        <div className="p-4 border-b space-y-4 bg-white z-10 shadow-sm">
-          <h2 className="text-xl font-bold text-gray-800">Product List</h2>
+        <div className="p-4 border-b dark:border-slate-700 space-y-4 bg-white dark:bg-slate-800 z-10 shadow-sm">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">Product List</h2>
           {/* Barcode Scanner */}
           <div className="relative">
             <input
@@ -303,7 +322,7 @@ export const SalesPage: React.FC = () => {
                   onClick={() => setSelectedCategory(null)}
                   className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm font-medium transition-colors ${selectedCategory === null
                     ? 'bg-green-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 hover:bg-gray-200 dark:hover:bg-slate-600'
                     }`}
                 >
                   All
@@ -314,7 +333,7 @@ export const SalesPage: React.FC = () => {
                     onClick={() => setSelectedCategory(category.id)}
                     className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm font-medium transition-colors ${selectedCategory === category.id
                       ? 'bg-green-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 hover:bg-gray-200 dark:hover:bg-slate-600'
                       }`}
                   >
                     {category.name}
@@ -328,15 +347,15 @@ export const SalesPage: React.FC = () => {
         </div>
 
         {/* Scrollable Product Grid (Only this part scrolls) */}
-        <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+        <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-slate-900/50">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 cursor-pointer hover:shadow-lg hover:border-green-400 transition-all flex flex-col"
+                className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-3 cursor-pointer hover:shadow-lg hover:border-green-400 dark:hover:border-green-400 transition-all flex flex-col"
                 onClick={() => addToCart(product)}
               >
-                <div className="aspect-square bg-gray-100 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+                <div className="aspect-square bg-gray-100 dark:bg-slate-700 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
                   {product.image ? (
                     <img
                       src={product.image.startsWith('http') ? product.image : `http://localhost:8000${product.image}`}
@@ -352,13 +371,13 @@ export const SalesPage: React.FC = () => {
                   )}
                 </div>
                 <div className="mt-auto">
-                  <h3 className="font-medium text-sm leading-tight mb-1 line-clamp-2" title={product.name}>
+                  <h3 className="font-medium text-sm leading-tight mb-1 line-clamp-2 dark:text-slate-200" title={product.name}>
                     {product.name}
-                    {product.size && <span className="text-gray-500 font-normal"> ({product.size})</span>}
+                    {product.size && <span className="text-gray-500 dark:text-slate-400 font-normal"> ({product.size})</span>}
                   </h3>
                   <div className="flex justify-between items-end">
-                    <p className="text-green-600 font-bold">{formatCurrency(product.price)}</p>
-                    <p className="text-xs text-gray-400">Qty: {product.stock}</p>
+                    <p className="text-green-600 dark:text-green-400 font-bold">{formatCurrency(product.price)}</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-500">Qty: {product.stock}</p>
                   </div>
                 </div>
               </div>
@@ -374,28 +393,28 @@ export const SalesPage: React.FC = () => {
       </div>
 
       {/* ----------------- RIGHT: ORDER DETAIL ----------------- */}
-      <div className="bg-white rounded-lg shadow-md flex flex-col h-full overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md flex flex-col h-full overflow-hidden">
         {/* Header */}
-        <div className="p-4 border-b bg-gray-50">
-          <h2 className="text-xl font-bold text-gray-800">Order Detail</h2>
+        <div className="p-4 border-b dark:border-slate-700 bg-gray-50 dark:bg-slate-900">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">Order Detail</h2>
         </div>
 
         {/* Scrollable Order Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Customer Selection */}
           <div>
-            <label className="block text-xs uppercase font-bold text-gray-500 mb-1">
+            <label className="block text-xs uppercase font-bold text-gray-500 dark:text-slate-400 mb-1">
               Customer
             </label>
             <div className="flex space-x-2">
               <button
                 onClick={() => setShowCustomerModal(true)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-left hover:bg-gray-50 flex justify-between items-center text-sm"
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-left hover:bg-gray-50 dark:hover:bg-slate-700 bg-white dark:bg-slate-700 flex justify-between items-center text-sm"
               >
                 {selectedCustomer
-                  ? <span className="font-medium">{selectedCustomer.first_name} {selectedCustomer.last_name}</span>
-                  : <span className="text-gray-400">Select Customer...</span>}
-                <span className="text-xs">▼</span>
+                  ? <span className="font-medium dark:text-white">{selectedCustomer.first_name} {selectedCustomer.last_name}</span>
+                  : <span className="text-gray-400 dark:text-slate-500">Select Customer...</span>}
+                <span className="text-xs dark:text-slate-400">▼</span>
               </button>
               {selectedCustomer && (
                 <Button
@@ -440,7 +459,7 @@ export const SalesPage: React.FC = () => {
 
           {/* Cart Items List */}
           <div>
-            <label className="block text-xs uppercase font-bold text-gray-500 mb-2">
+            <label className="block text-xs uppercase font-bold text-gray-500 dark:text-slate-400 mb-2">
               Cart Items ({cart.length})
             </label>
             <div className="space-y-2">
@@ -451,12 +470,12 @@ export const SalesPage: React.FC = () => {
                 </div>
               ) : (
                 cart.map((item) => (
-                  <div key={item.product_id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100 group">
+                  <div key={item.product_id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-slate-700/50 rounded-lg border border-gray-100 dark:border-slate-600 group">
                     <div className="flex-1 min-w-0 pr-2">
-                      <p className="font-medium text-sm truncate">
+                      <p className="font-medium text-sm truncate dark:text-slate-200">
                         {item.product.name}
                       </p>
-                      <p className="text-xs text-green-600 font-mono">{formatCurrency(item.price)}</p>
+                      <p className="text-xs text-green-600 dark:text-green-400 font-mono">{formatCurrency(item.price)}</p>
                     </div>
                     <div className="flex items-center space-x-1">
                       <button
@@ -487,10 +506,10 @@ export const SalesPage: React.FC = () => {
         </div>
 
         {/* Footer (Totals & Action) - Fixed at bottom */}
-        <div className="border-t p-4 bg-gray-50 space-y-3">
+        <div className="border-t dark:border-slate-700 p-4 bg-gray-50 dark:bg-slate-900 space-y-3">
           <div className="flex justify-between items-center text-lg font-bold">
-            <span className="text-gray-700">Total</span>
-            <span className="text-green-700">{formatCurrency(total)}</span>
+            <span className="text-gray-700 dark:text-slate-300">Total</span>
+            <span className="text-green-700 dark:text-green-400">{formatCurrency(total)}</span>
           </div>
 
           {paymentMethod === 'cash' && cart.length > 0 && (

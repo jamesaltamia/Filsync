@@ -72,12 +72,14 @@ class DashboardController extends Controller
             $revenue = Order::whereBetween('created_at', [$startOfMonth, $endOfMonth])
                 ->sum('total');
 
-            // Calculate cost (sum of product price * quantity for all orders in that month)
+            // Calculate cost (sum of product unit_price * quantity for all valid orders in that month)
             $cost = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->join('products', 'order_items.product_id', '=', 'products.id')
                 ->whereBetween('orders.created_at', [$startOfMonth, $endOfMonth])
-                ->sum(DB::raw('order_items.quantity * (products.price * 0.6)')); // Assuming 60% cost
+                ->where('orders.status', '!=', 'cancelled')
+                ->whereNotNull('products.unit_price')
+                ->sum(DB::raw('order_items.quantity * products.unit_price'));
 
             $data[] = [
                 'month' => $month->format('M'),

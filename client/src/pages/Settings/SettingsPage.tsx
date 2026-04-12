@@ -107,7 +107,7 @@ export const SettingsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Settings</h1>
+        <h1 className="text-2xl font-bold dark:text-white">Settings</h1>
         <div className="flex items-center gap-3">
           {success && <span className="text-green-700 text-sm">{success}</span>}
           {error && <span className="text-red-600 text-sm">{error}</span>}
@@ -140,8 +140,8 @@ export const SettingsPage: React.FC = () => {
                 className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
               />
               <div>
-                <span className="font-medium text-gray-700">Prevent Sale if Stock is Zero</span>
-                <p className="text-sm text-gray-500">When enabled, products with zero stock cannot be sold</p>
+                <span className="font-medium text-gray-700 dark:text-slate-200">Prevent Sale if Stock is Zero</span>
+                <p className="text-sm text-gray-500 dark:text-slate-400">When enabled, products with zero stock cannot be sold</p>
               </div>
             </label>
           </div>
@@ -155,20 +155,20 @@ export const SettingsPage: React.FC = () => {
                 className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
               />
               <div>
-                <span className="font-medium text-gray-700">Allow Negative Stock</span>
-                <p className="text-sm text-gray-500">When disabled, stock cannot go below zero</p>
+                <span className="font-medium text-gray-700 dark:text-slate-200">Allow Negative Stock</span>
+                <p className="text-sm text-gray-500 dark:text-slate-400">When disabled, stock cannot go below zero</p>
               </div>
             </label>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
               Stock Adjustment Permission
             </label>
             <select
               value={settings.stock_adjustment_permission}
               onChange={(e) => updateSetting('stock_adjustment_permission', e.target.value as 'admin' | 'all')}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white dark:bg-slate-700 dark:text-white"
             >
               <option value="admin">Admin Only</option>
               <option value="all">All Users</option>
@@ -189,8 +189,8 @@ export const SettingsPage: React.FC = () => {
                 className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
               />
               <div>
-                <span className="font-medium text-gray-700">Enable Product Variants</span>
-                <p className="text-sm text-gray-500">Allow products to have variants (size, gender, etc.)</p>
+                <span className="font-medium text-gray-700 dark:text-slate-200">Enable Product Variants</span>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Allow products to have variants (size, gender, etc.)</p>
               </div>
             </label>
           </div>
@@ -206,8 +206,8 @@ export const SettingsPage: React.FC = () => {
                     className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
                   />
                   <div>
-                    <span className="font-medium text-gray-700">Size Variant (S–XL)</span>
-                    <p className="text-sm text-gray-500">Enable size selection for products (e.g., Small, Medium, Large, XL, XXL)</p>
+                    <span className="font-medium text-gray-700 dark:text-slate-200">Size Variant (S–XL)</span>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">Enable size selection for products (e.g., Small, Medium, Large, XL, XXL)</p>
                   </div>
                 </label>
               </div>
@@ -221,8 +221,8 @@ export const SettingsPage: React.FC = () => {
                     className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
                   />
                   <div>
-                    <span className="font-medium text-gray-700">Gender Variant (Male/Female)</span>
-                    <p className="text-sm text-gray-500">Enable gender selection for products</p>
+                    <span className="font-medium text-gray-700 dark:text-slate-200">Gender Variant (Male/Female)</span>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">Enable gender selection for products</p>
                   </div>
                 </label>
               </div>
@@ -238,8 +238,8 @@ export const SettingsPage: React.FC = () => {
                 className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
               />
               <div>
-                <span className="font-medium text-gray-700">Barcode per Variant</span>
-                <p className="text-sm text-gray-500">Each product variant will have its own unique barcode</p>
+                <span className="font-medium text-gray-700 dark:text-slate-200">Barcode per Variant</span>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Each product variant will have its own unique barcode</p>
               </div>
             </label>
           </div>
@@ -253,8 +253,8 @@ export const SettingsPage: React.FC = () => {
                 className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
               />
               <div>
-                <span className="font-medium text-gray-700">Auto-generate Barcode</span>
-                <p className="text-sm text-gray-500">Automatically generate barcodes for new products/variants</p>
+                <span className="font-medium text-gray-700 dark:text-slate-200">Auto-generate Barcode</span>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Automatically generate barcodes for new products/variants</p>
               </div>
             </label>
           </div>
@@ -268,8 +268,8 @@ export const SettingsPage: React.FC = () => {
                 className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
               />
               <div>
-                <span className="font-medium text-gray-700">Allow Duplicate Products</span>
-                <p className="text-sm text-gray-500">When disabled, prevents creating duplicate products with the same name</p>
+                <span className="font-medium text-gray-700 dark:text-slate-200">Allow Duplicate Products</span>
+                <p className="text-sm text-gray-500 dark:text-slate-400">When disabled, prevents creating duplicate products with the same name</p>
               </div>
             </label>
           </div>
@@ -288,18 +288,18 @@ export const SettingsPage: React.FC = () => {
                 className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
               />
               <div>
-                <span className="font-medium text-gray-700">Role-based Access</span>
-                <p className="text-sm text-gray-500">Enable role-based permissions (Admin, Cashier)</p>
+                <span className="font-medium text-gray-700 dark:text-slate-200">Role-based Access</span>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Enable role-based permissions (Admin, Cashier)</p>
               </div>
             </label>
           </div>
 
           {settings.role_based_access_enabled && (
             <>
-              <div className="ml-8 space-y-3 border-l-2 border-gray-200 pl-4">
+              <div className="ml-8 space-y-3 border-l-2 border-gray-200 dark:border-slate-700 pl-4">
                 <div>
-                  <p className="font-medium text-gray-700 mb-2">Roles:</p>
-                  <ul className="text-sm text-gray-600 space-y-1">
+                  <p className="font-medium text-gray-700 dark:text-slate-200 mb-2">Roles:</p>
+                  <ul className="text-sm text-gray-600 dark:text-slate-400 space-y-1">
                     <li>• <strong>Admin:</strong> Full access to all features</li>
                     <li>• <strong>Cashier:</strong> Limited access (Sales, Orders History, Reports)</li>
                   </ul>
@@ -314,8 +314,8 @@ export const SettingsPage: React.FC = () => {
                       className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
                     />
                     <div>
-                      <span className="font-medium text-gray-700">Cashier Restrictions: Cannot Delete Sales</span>
-                      <p className="text-sm text-gray-500">Cashiers cannot delete completed sales</p>
+                      <span className="font-medium text-gray-700 dark:text-slate-200">Cashier Restrictions: Cannot Delete Sales</span>
+                      <p className="text-sm text-gray-500 dark:text-slate-400">Cashiers cannot delete completed sales</p>
                     </div>
                   </label>
                 </div>
@@ -329,8 +329,8 @@ export const SettingsPage: React.FC = () => {
                       className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
                     />
                     <div>
-                      <span className="font-medium text-gray-700">Cashier Restrictions: Cannot Edit Inventory</span>
-                      <p className="text-sm text-gray-500">Cashiers cannot modify product inventory</p>
+                      <span className="font-medium text-gray-700 dark:text-slate-200">Cashier Restrictions: Cannot Edit Inventory</span>
+                      <p className="text-sm text-gray-500 dark:text-slate-400">Cashiers cannot modify product inventory</p>
                     </div>
                   </label>
                 </div>
@@ -347,8 +347,8 @@ export const SettingsPage: React.FC = () => {
                 className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
               />
               <div>
-                <span className="font-medium text-gray-700">Admin Override</span>
-                <p className="text-sm text-gray-500">Admins can override restrictions when needed</p>
+                <span className="font-medium text-gray-700 dark:text-slate-200">Admin Override</span>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Admins can override restrictions when needed</p>
               </div>
             </label>
           </div>
@@ -383,8 +383,8 @@ export const SettingsPage: React.FC = () => {
                 className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
               />
               <div>
-                <span className="font-medium text-gray-700">Show Store Information</span>
-                <p className="text-sm text-gray-500">Display store name and details on receipts</p>
+                <span className="font-medium text-gray-700 dark:text-slate-200">Show Store Information</span>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Display store name and details on receipts</p>
               </div>
             </label>
           </div>
@@ -398,8 +398,8 @@ export const SettingsPage: React.FC = () => {
                 className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
               />
               <div>
-                <span className="font-medium text-gray-700">Show Customer Information</span>
-                <p className="text-sm text-gray-500">Display customer name and ID on receipts</p>
+                <span className="font-medium text-gray-700 dark:text-slate-200">Show Customer Information</span>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Display customer name and ID on receipts</p>
               </div>
             </label>
           </div>
