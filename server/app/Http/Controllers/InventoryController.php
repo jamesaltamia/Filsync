@@ -33,9 +33,10 @@ class InventoryController extends Controller
             });
         }
 
-        // Filter active/inactive
+        // Filter active/inactive — must cast to bool since query params arrive as strings ("true"/"false")
         if ($request->has('is_active')) {
-            $query->where('is_active', $request->is_active);
+            $isActive = filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN);
+            $query->where('is_active', $isActive);
         }
 
         $products = $query->orderBy('created_at', 'desc')->paginate(20);

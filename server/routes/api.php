@@ -61,6 +61,7 @@ Route::get('/reports/monthly', [ReportController::class, 'monthly']);
 Route::get('/reports/yearly', [ReportController::class, 'yearly']);
 Route::get('/reports/item-sales', [ReportController::class, 'itemSales']);
 Route::get('/reports/credit-sales', [ReportController::class, 'creditSales']);
+Route::get('/reports/water-sales', [ReportController::class, 'waterSales']);
 
 // 2. Canteen Management Routes added here
     Route::prefix('canteen')->group(function () {
@@ -78,6 +79,25 @@ Route::get('/reports/credit-sales', [ReportController::class, 'creditSales']);
         Route::get('/bills', [CanteenController::class, 'getBills']);
         Route::post('/bills/generate', [CanteenController::class, 'generateMonthlyBills']);
         Route::post('/bills/{id}/pay', [CanteenController::class, 'markAsPaid']);
+    });
+
+    // Water Station Routes
+    Route::prefix('water')->group(function () {
+        Route::post('/transactions', [\App\Http\Controllers\WaterTransactionController::class, 'store']);
+        Route::get('/dashboard', [\App\Http\Controllers\WaterTransactionController::class, 'dashboard']);
+    });
+
+    // Stock Room Routes
+    Route::prefix('stock-room')->group(function () {
+        Route::get('/stats', [\App\Http\Controllers\StockRoomController::class, 'stats']);
+        Route::get('/', [\App\Http\Controllers\StockRoomController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\StockRoomController::class, 'store']);
+        Route::put('/{id}', [\App\Http\Controllers\StockRoomController::class, 'update']);
+        Route::delete('/{id}', [\App\Http\Controllers\StockRoomController::class, 'destroy']);
+        Route::post('/{id}/adjust', [\App\Http\Controllers\StockRoomController::class, 'adjust']);
+        Route::post('/{id}/status', [\App\Http\Controllers\StockRoomController::class, 'updateStatus']);
+        Route::post('/{id}/transfer', [\App\Http\Controllers\StockRoomController::class, 'transfer']);
+        Route::get('/{id}/transfers', [\App\Http\Controllers\StockRoomController::class, 'transferHistory']);
     });
 
     // Settings

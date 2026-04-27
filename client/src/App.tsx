@@ -13,6 +13,8 @@ import { CustomersPage } from './pages/Customers/CustomersPage';
 import { ReportsPage } from './pages/Reports/ReportsPage';
 import { SettingsPage } from './pages/Settings/SettingsPage';
 import { CanteenPage } from './pages/Canteen/CanteenPage';
+import { WaterPage } from './pages/WaterStation/WaterPage';
+import { StockRoomPage } from './pages/StockRoom/StockRoomPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
@@ -49,6 +51,22 @@ function App() {
                         element={
                           <ProtectedRoute allowedRoles={['admin']}>
                             <CanteenPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/water"
+                        element={
+                          <ProtectedRoute allowedRoles={['admin']}>
+                            <WaterPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/stock-room"
+                        element={
+                          <ProtectedRoute allowedRoles={['admin']}>
+                            <StockRoomPage />
                           </ProtectedRoute>
                         }
                       />

@@ -16,12 +16,14 @@ const CANTEEN_LOCATIONS = ['Main Canteen', 'High School Canteen'];
 export const ReportsPage: React.FC = () => {
   // --- STATES ---
   const [reportType, setReportType] =
-    useState<'daily' | 'monthly' | 'yearly' | 'items' | 'credit' | 'canteen'>('daily');
+    useState<'daily' | 'monthly' | 'yearly' | 'items' | 'credit' | 'canteen' | 'water'>('daily');
 
   const [dailyData, setDailyData] = useState<DailySales | null>(null);
   const [itemSales, setItemSales] = useState<ItemSales[]>([]);
   const [creditSales, setCreditSales] = useState<CreditSale[]>([]);
   const [canteenBills, setCanteenBills] = useState<Bill[]>([]);
+  const [waterData, setWaterData] = useState<any>(null);
+  const [waterPeriod, setWaterPeriod] = useState<'daily' | 'monthly' | 'yearly'>('daily');
 
   // NEW: Filter State for Canteen
   const [filterLocation, setFilterLocation] = useState<string>('All');
@@ -43,7 +45,8 @@ export const ReportsPage: React.FC = () => {
     setItemSales([]);
     setCreditSales([]);
     setCanteenBills([]);
-    setFilterLocation('All'); // Reset filter on tab change
+    setWaterData(null);
+    setFilterLocation('All');
     setItemSalesCategory(null);
     setItemSalesDate('');
   }, [reportType]);
@@ -97,12 +100,26 @@ export const ReportsPage: React.FC = () => {
     try { setCanteenBills(await canteenService.getBills()); } finally { setLoading(false); }
   };
 
+  const fetchWater = async () => {
+    setLoading(true);
+    try {
+      const data = await reportService.getWaterReport(
+        waterPeriod,
+        year,
+        month,
+        date
+      );
+      setWaterData(data);
+    } finally { setLoading(false); }
+  };
+
   const handleGenerateReport = () => {
     if (reportType === 'daily') fetchDaily();
     else if (reportType === 'monthly') fetchMonthly();
     else if (reportType === 'yearly') fetchYearly();
     else if (reportType === 'items') fetchItems();
     else if (reportType === 'credit') fetchCreditSales();
+    else if (reportType === 'water') fetchWater();
     else fetchCanteen();
   };
 
@@ -154,6 +171,15 @@ export const ReportsPage: React.FC = () => {
       filename = `canteen-report-${filterLocation === 'All' ? 'all' : filterLocation.toLowerCase().replace(/\s/g, '-')}.csv`;
     }
 
+    else if (reportType === 'water' && waterData) {
+      csv = 'Date,Container Size (L),Quantity,Total Gallons,Total Price\n';
+      waterData.transactions.forEach((t: any) => {
+        const d = new Date(t.created_at).toLocaleDateString();
+        csv += `"${d}",${t.gallons},${t.quantity},${fNum(t.total_gallons)},${fNum(t.price)}\n`;
+      });
+      filename = `water-station-${waterData.label}.csv`;
+    }
+
     else if (dailyData) {
       csv =
         `Metric,Value\n` +
@@ -175,7 +201,8 @@ export const ReportsPage: React.FC = () => {
     dailyData ||
     itemSales.length > 0 ||
     creditSales.length > 0 ||
-    canteenBills.length > 0;
+    canteenBills.length > 0 ||
+    waterData;
 
   const getReportTitle = () => {
     if (reportType === 'daily') return `Daily Sales Report - ${date}`;
@@ -183,8 +210,8 @@ export const ReportsPage: React.FC = () => {
     if (reportType === 'yearly') return `Yearly Sales Report - ${year}`;
     if (reportType === 'items') return 'Item Sales Report';
     if (reportType === 'credit') return 'Credit Sales Report (Teachers)';
-    // UPDATED Title
     if (reportType === 'canteen') return `Canteen Report (${filterLocation})`;
+    if (reportType === 'water' && waterData) return `Water Station Report - ${waterData.label}`;
     return 'Report';
   };
 
@@ -205,7 +232,7 @@ export const ReportsPage: React.FC = () => {
       {/* CONTROLS */}
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 print:hidden">
         <div className="flex flex-wrap gap-2 mb-4">
-          {['daily', 'monthly', 'yearly', 'items', 'credit', 'canteen'].map(t => (
+          {['daily', 'monthly', 'yearly', 'items', 'credit', 'canteen', 'water'].map(t => (
             <button
               key={t}
               onClick={() => setReportType(t as any)}
@@ -214,7 +241,8 @@ export const ReportsPage: React.FC = () => {
               {t === 'items' ? 'Item Sales' :
                 t === 'credit' ? 'Credit Sales (Teachers)' :
                   t === 'canteen' ? 'Canteen' :
-                    t.charAt(0).toUpperCase() + t.slice(1)}
+                    t === 'water' ? 'Water Station' :
+                      t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
         </div>
@@ -265,7 +293,7 @@ export const ReportsPage: React.FC = () => {
             </>
           )}
 
-          {/* NEW: Canteen Location Filter */}
+          {/* Canteen Location Filter */}
           {reportType === 'canteen' && (
             <div className="flex flex-col gap-1">
               <label className="text-sm text-gray-600 dark:text-slate-400 font-medium">Filter Location</label>
@@ -280,6 +308,45 @@ export const ReportsPage: React.FC = () => {
                 ))}
               </select>
             </div>
+          )}
+
+          {/* Water Station Period Filter */}
+          {reportType === 'water' && (
+            <>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-gray-600 dark:text-slate-400 font-medium">Period</label>
+                <select
+                  value={waterPeriod}
+                  onChange={(e) => setWaterPeriod(e.target.value as any)}
+                  className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg"
+                >
+                  <option value="daily">Daily</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
+              {waterPeriod === 'daily' && (
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm text-gray-600 dark:text-slate-400 font-medium">Date</label>
+                  <input type="date" value={date} onChange={e => setDate(e.target.value)}
+                    className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg" />
+                </div>
+              )}
+              {(waterPeriod === 'monthly' || waterPeriod === 'yearly') && (
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm text-gray-600 dark:text-slate-400 font-medium">Year</label>
+                  <input type="number" value={year} onChange={e => setYear(+e.target.value)}
+                    className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg w-28" />
+                </div>
+              )}
+              {waterPeriod === 'monthly' && (
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm text-gray-600 dark:text-slate-400 font-medium">Month</label>
+                  <input type="number" min={1} max={12} value={month} onChange={e => setMonth(+e.target.value)}
+                    className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg w-24" />
+                </div>
+              )}
+            </>
           )}
 
           <Button onClick={handleGenerateReport} isLoading={loading}>
@@ -547,6 +614,89 @@ export const ReportsPage: React.FC = () => {
       {reportType === 'canteen' && filteredCanteenBills.length === 0 && canteenBills.length > 0 && (
         <div className="text-center py-10 bg-white rounded-lg border">
           <p className="text-gray-500">No records found for {filterLocation}.</p>
+        </div>
+      )}
+
+      {/* --- REPORT VIEW: WATER STATION --- */}
+      {reportType === 'water' && waterData && (
+        <div ref={printRef} className="space-y-6">
+          <div className="hidden print:block mb-6 text-center">
+            <h1 className="text-3xl font-bold mb-2">FilSync POS</h1>
+            <h2 className="text-xl font-semibold mb-2">{getReportTitle()}</h2>
+            <p className="text-gray-600">Generated on {new Date().toLocaleString()}</p>
+            <hr className="my-4" />
+          </div>
+
+          {/* Always-on summary stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
+              <p className="text-sm text-gray-600 dark:text-slate-400 font-medium mb-1">💰 Daily Sales</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{formatCurrency(waterData.summary.daily_sales)}</p>
+            </div>
+            <div className="bg-cyan-50 dark:bg-cyan-900/20 p-4 rounded-lg border border-cyan-200 dark:border-cyan-700">
+              <p className="text-sm text-gray-600 dark:text-slate-400 font-medium mb-1">💧 Daily Gallons</p>
+              <p className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{Number(waterData.summary.daily_gallons).toFixed(2)} gal</p>
+            </div>
+            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-700">
+              <p className="text-sm text-gray-600 dark:text-slate-400 font-medium mb-1">📅 Monthly Sales</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{formatCurrency(waterData.summary.monthly_sales)}</p>
+            </div>
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-700">
+              <p className="text-sm text-gray-600 dark:text-slate-400 font-medium mb-1">📆 Yearly Sales</p>
+              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{formatCurrency(waterData.summary.yearly_sales)}</p>
+            </div>
+          </div>
+
+          {/* Filtered period totals */}
+          <Card title={`Water Station Report — ${waterData.label}`}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-blue-50 dark:bg-slate-700 p-4 rounded-lg">
+                <p className="text-sm text-gray-600 dark:text-slate-400 font-medium">Total Orders</p>
+                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{waterData.total_orders}</p>
+              </div>
+              <div className="bg-green-50 dark:bg-slate-700 p-4 rounded-lg">
+                <p className="text-sm text-gray-600 dark:text-slate-400 font-medium">Total Sales</p>
+                <p className="text-3xl font-bold text-green-600 dark:text-green-400">{formatCurrency(waterData.total_sales)}</p>
+              </div>
+              <div className="bg-cyan-50 dark:bg-slate-700 p-4 rounded-lg">
+                <p className="text-sm text-gray-600 dark:text-slate-400 font-medium">Total Gallons Sold</p>
+                <p className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">{Number(waterData.total_gallons).toFixed(2)} gal</p>
+              </div>
+            </div>
+
+            {waterData.transactions.length > 0 ? (
+              <div className="flex flex-col border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                <div className="overflow-y-auto max-h-[400px]">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                    <thead className="bg-gray-50 dark:bg-slate-900/50 sticky top-0 z-10">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">#</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Date &amp; Time</th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Container (L)</th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Qty</th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Gallons</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+                      {waterData.transactions.map((t: any, i: number) => (
+                        <tr key={t.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50">
+                          <td className="px-6 py-3 text-gray-400 text-sm">{i + 1}</td>
+                          <td className="px-6 py-3 text-gray-700 dark:text-slate-300 text-sm">{new Date(t.created_at).toLocaleString()}</td>
+                          <td className="px-6 py-3 text-center font-medium dark:text-slate-200">{t.gallons} L</td>
+                          <td className="px-6 py-3 text-center dark:text-slate-200">{t.quantity}</td>
+                          <td className="px-6 py-3 text-center text-cyan-600 dark:text-cyan-400 font-semibold">{Number(t.total_gallons).toFixed(2)}</td>
+                          <td className="px-6 py-3 text-right font-bold text-green-600 dark:text-green-400">{formatCurrency(t.price)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <p className="text-center py-8 text-gray-400">No transactions found for this period.</p>
+            )}
+          </Card>
         </div>
       )}
     </div>

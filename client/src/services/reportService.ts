@@ -28,5 +28,12 @@ export const reportService = {
     const response = await api.get<CreditSale[]>('/reports/credit-sales');
     return response.data;
   },
+
+  getWaterReport: async (type: string, year?: number, month?: number, date?: string) => {
+    const response = await api.get('/reports/water-sales', {
+      params: { type, year, month, date }
+    });
+    return response.data;
+  },
 };
 

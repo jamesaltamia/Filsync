@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import LogoImg from '../assets/Filamer.png';
 import { ThemeToggle } from '../components/ThemeToggle';
 import {
@@ -10,10 +10,14 @@ import {
   IconShoppingCart,
   IconClipboardList,
   IconBuildingStore,
+  IconDroplet,
   IconUsers,
   IconChartBar,
   IconSettings,
-  IconLogout
+  IconLogout,
+  IconChevronDown,
+  IconBuildingWarehouse,
+  IconShoppingBag,
 } from '@tabler/icons-react';
 
 interface MainLayoutProps {
@@ -24,6 +28,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [inventoryOpen, setInventoryOpen] = useState(
+    location.pathname === '/inventory' || location.pathname === '/stock-room'
+  );
 
   const handleLogout = async () => {
     await logout();
@@ -36,6 +43,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     { name: 'Sales', path: '/sales', icon: <IconShoppingCart size={22} stroke={1.5} />, roles: ['admin', 'cashier'] },
     { name: 'Orders History', path: '/orders', icon: <IconClipboardList size={22} stroke={1.5} />, roles: ['admin', 'cashier'] },
     { name: 'Canteen', path: '/canteen', icon: <IconBuildingStore size={22} stroke={1.5} />, roles: ['admin'] },
+    { name: 'Water Station', path: '/water', icon: <IconDroplet size={22} stroke={1.5} />, roles: ['admin'] },
     { name: 'Customers', path: '/customers', icon: <IconUsers size={22} stroke={1.5} />, roles: ['admin'] },
     { name: 'Reports', path: '/reports', icon: <IconChartBar size={22} stroke={1.5} />, roles: ['admin', 'cashier'] },
   ];
@@ -63,6 +71,53 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <nav className="mt-6 flex-1 px-3 space-y-1">
           {navigation.map((item) => {
             const isActive = location.pathname === item.path;
+
+            // Inventory gets special collapsible treatment
+            if (item.path === '/inventory' && item.roles.includes(user?.role || 'cashier')) {
+              const inventoryActive = location.pathname === '/inventory' || location.pathname === '/stock-room';
+              return (
+                <div key="inventory-group">
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setInventoryOpen(o => !o)}
+                    className={`w-full flex items-center px-4 py-3 rounded-md transition-all duration-200 group ${
+                      inventoryActive ? 'bg-blue-600/50 dark:bg-blue-600 text-white shadow-md border-l-4 border-yellow-400'
+                      : 'text-blue-100 dark:text-slate-400 hover:bg-white/10 hover:text-white'}`}
+                  >
+                    <span className="mr-3"><IconBox size={22} stroke={1.5} /></span>
+                    <span className="font-medium flex-1 text-left">Inventory</span>
+                    <motion.span animate={{ rotate: inventoryOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                      <IconChevronDown size={16} />
+                    </motion.span>
+                  </motion.button>
+                  <AnimatePresence initial={false}>
+                    {inventoryOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden ml-4 mt-1 space-y-1"
+                      >
+                        <Link to="/inventory"
+                          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm transition-all ${
+                            location.pathname === '/inventory' ? 'bg-blue-600/40 text-white font-semibold' : 'text-blue-200 dark:text-slate-400 hover:bg-white/10 hover:text-white'}`}>
+                          <IconShoppingBag size={18} stroke={1.5} />
+                          Selling Inventory
+                        </Link>
+                        <Link to="/stock-room"
+                          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm transition-all ${
+                            location.pathname === '/stock-room' ? 'bg-blue-600/40 text-white font-semibold' : 'text-blue-200 dark:text-slate-400 hover:bg-white/10 hover:text-white'}`}>
+                          <IconBuildingWarehouse size={18} stroke={1.5} />
+                          Stock Room
+                        </Link>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            }
+
             return (
               <motion.div key={item.path} whileHover={{ x: 5 }} whileTap={{ scale: 0.95 }}>
                 <Link
@@ -123,7 +178,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         {/* Header: Made background and text reactive to theme */}
         <header className="bg-[#0a318e] dark:bg-slate-900 border-b border-white/10 h-16 flex items-center justify-between px-8 sticky top-0 z-10 shadow-sm transition-colors duration-300">
           <h2 className="text-xl font-bold text-white">
-            {navigation.find((item) => item.path === location.pathname)?.name || 'Dashboard'}
+            {location.pathname === '/stock-room' ? 'Stock Room' :
+             location.pathname === '/inventory' ? 'Inventory' :
+             navigation.find((item) => item.path === location.pathname)?.name || 'Dashboard'}
           </h2>
 
           <div className="flex items-center space-x-6">

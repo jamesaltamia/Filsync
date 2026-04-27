@@ -91,37 +91,33 @@ export const LoginPage: React.FC = () => {
               )}
             </button>
           </div>
+          <div className="flex items-center justify-end mt-1 mb-2">
+            <span
+              className="text-sm font-medium text-blue-600 hover:text-blue-700 cursor-pointer transition-colors"
+              onClick={() => navigate('/forgot-password')}
+            >
+              Forgot password?
+            </span>
+          </div>
 
           <Button
             type="submit"
             disabled={loading}
-            className="w-full mt-6 text-lg py-2.5"
+            className="w-full mt-4 text-base font-semibold py-2.5 rounded-lg shadow hover:shadow-md transition-all duration-300"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? 'Signing in...' : 'Sign in'}
           </Button>
         </form>
 
-        <p
-          className="mt-5 text-center text-gray-600 cursor-pointer hover:text-blue-600 underline text-sm font-medium"
-          onClick={() => navigate('/forgot-password')}
-        >
-          Forgot password?
-        </p>
-
-        <div className="my-6 flex items-center">
-          <div className="flex-grow border-t border-gray-300"></div>
-          <span className="px-3 text-gray-400 text-sm font-mono tracking-widest">OR</span>
-          <div className="flex-grow border-t border-gray-300"></div>
-        </div>
-
-        <div className="text-center">
-          <Button
-            className='bg-green-600 hover:bg-green-700 w-full text-lg py-2.5'
+        <p className="mt-8 text-center text-sm text-gray-600">
+          No account yet?{' '}
+          <span
+            className="font-semibold text-blue-600 hover:text-blue-700 cursor-pointer transition-colors hover:underline"
             onClick={() => navigate('/register')}
           >
-            Create new account
-          </Button>
-        </div>
+            Create an account
+          </span>
+        </p>
       </div>
     </div>
   );
