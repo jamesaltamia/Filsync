@@ -219,61 +219,93 @@ export const ReportsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* HEADER */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold dark:text-white">Reports</h1>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 border-b border-gray-200 dark:border-slate-700 pb-4">
+        <div>
+          <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
+            Reports & Analytics
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Generate comprehensive insights for your business</p>
+        </div>
         {showActions && (
-          <div className="flex gap-2 print:hidden">
-            <Button onClick={handlePrint} variant="outline">🖨️ Print Report</Button>
-            <Button onClick={handleExportCSV} variant="outline">📊 Export CSV</Button>
+          <div className="flex gap-3 print:hidden">
+            <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-xl shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-500 transition-all text-sm font-medium text-gray-700 dark:text-slate-200">
+              🖨️ Print Report
+            </button>
+            <button onClick={handleExportCSV} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl shadow-md hover:shadow-lg hover:from-green-600 hover:to-emerald-700 transition-all text-sm font-medium">
+              📊 Export CSV
+            </button>
           </div>
         )}
       </div>
 
       {/* CONTROLS */}
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 print:hidden">
-        <div className="flex flex-wrap gap-2 mb-4">
-          {['daily', 'monthly', 'yearly', 'items', 'credit', 'canteen', 'water'].map(t => (
+      <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 dark:border-slate-700/50 p-6 print:hidden transition-all duration-300 relative overflow-hidden">
+
+        {/* Decorative background blur */}
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-blue-500/10 blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none"></div>
+
+        {/* Modern Tab Bar */}
+        <div className="relative z-10 flex flex-wrap gap-2 mb-6 p-1.5 bg-gray-100/80 dark:bg-slate-900/60 rounded-xl shadow-inner">
+          {[
+            { id: 'daily', label: 'Daily', icon: '📅' },
+            { id: 'monthly', label: 'Monthly', icon: '📆' },
+            { id: 'yearly', label: 'Yearly', icon: '🗓️' },
+            { id: 'items', label: 'Item Sales', icon: '🛍️' },
+            { id: 'credit', label: 'Credit Sales', icon: '💳' },
+            { id: 'canteen', label: 'Canteen', icon: '🏪' },
+            { id: 'water', label: 'Water Station', icon: '💧' }
+          ].map(t => (
             <button
-              key={t}
-              onClick={() => setReportType(t as any)}
-              className={`px-4 py-2 rounded-lg ${reportType === t ? 'bg-green-600 text-white' : 'bg-gray-200 dark:bg-slate-700 dark:text-slate-300'}`}
+              key={t.id}
+              onClick={() => setReportType(t.id as any)}
+              className={`flex-1 min-w-[130px] flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ease-out transform ${reportType === t.id
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-[1.02]'
+                  : 'text-gray-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm hover:text-gray-900 dark:hover:text-white'
+                }`}
             >
-              {t === 'items' ? 'Item Sales' :
-                t === 'credit' ? 'Credit Sales (Teachers)' :
-                  t === 'canteen' ? 'Canteen' :
-                    t === 'water' ? 'Water Station' :
-                      t.charAt(0).toUpperCase() + t.slice(1)}
+              <span className={reportType === t.id ? 'opacity-100' : 'opacity-70'}>{t.icon}</span>
+              <span>{t.label}</span>
             </button>
           ))}
         </div>
 
-        <div className="flex flex-wrap gap-4 items-end">
+        {/* Filters Toolbar */}
+        <div className="relative z-10 flex flex-wrap items-end gap-5 bg-gray-50/50 dark:bg-slate-800/50 p-5 rounded-xl border border-gray-100 dark:border-slate-700/50">
+
           {reportType === 'daily' && (
-            <input type="date" value={date} onChange={e => setDate(e.target.value)}
-              className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg" />
+            <div className="flex flex-col gap-1.5 group">
+              <label className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider group-focus-within:text-blue-500 transition-colors">Select Date</label>
+              <input type="date" value={date} onChange={e => setDate(e.target.value)}
+                className="border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm" />
+            </div>
           )}
 
           {(reportType === 'monthly' || reportType === 'yearly') && (
-            <div className="flex gap-2">
-              <input type="number" value={year} onChange={e => setYear(+e.target.value)}
-                className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg" />
+            <div className="flex gap-4">
+              <div className="flex flex-col gap-1.5 group">
+                <label className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider group-focus-within:text-blue-500 transition-colors">Year</label>
+                <input type="number" value={year} onChange={e => setYear(+e.target.value)}
+                  className="border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white px-4 py-2.5 rounded-xl w-28 focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm" />
+              </div>
               {reportType === 'monthly' && (
-                <input type="number" min={1} max={12} value={month}
-                  onChange={e => setMonth(+e.target.value)}
-                  className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg" />
+                <div className="flex flex-col gap-1.5 group">
+                  <label className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider group-focus-within:text-blue-500 transition-colors">Month</label>
+                  <input type="number" min={1} max={12} value={month} onChange={e => setMonth(+e.target.value)}
+                    className="border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white px-4 py-2.5 rounded-xl w-24 focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm" />
+                </div>
               )}
             </div>
           )}
 
-          {/* NEW: Item Sales Filters */}
           {reportType === 'items' && (
             <>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm text-gray-600 dark:text-slate-400 font-medium">Category</label>
+              <div className="flex flex-col gap-1.5 group">
+                <label className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider group-focus-within:text-blue-500 transition-colors">Category Filter</label>
                 <select
                   value={itemSalesCategory || ''}
                   onChange={(e) => setItemSalesCategory(e.target.value ? Number(e.target.value) : null)}
-                  className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg min-w-[200px]"
+                  className="border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white px-4 py-2.5 rounded-xl min-w-[200px] focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
                 >
                   <option value="">All Categories</option>
                   {categories.map(cat => (
@@ -281,28 +313,27 @@ export const ReportsPage: React.FC = () => {
                   ))}
                 </select>
               </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm text-gray-600 dark:text-slate-400 font-medium">Date</label>
+              <div className="flex flex-col gap-1.5 group">
+                <label className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider group-focus-within:text-blue-500 transition-colors">Specific Date</label>
                 <input
                   type="date"
                   value={itemSalesDate}
                   onChange={(e) => setItemSalesDate(e.target.value)}
-                  className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg"
+                  className="border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
                 />
               </div>
             </>
           )}
 
-          {/* Canteen Location Filter */}
           {reportType === 'canteen' && (
-            <div className="flex flex-col gap-1">
-              <label className="text-sm text-gray-600 dark:text-slate-400 font-medium">Filter Location</label>
+            <div className="flex flex-col gap-1.5 group">
+              <label className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider group-focus-within:text-blue-500 transition-colors">Filter Location</label>
               <select
                 value={filterLocation}
                 onChange={(e) => setFilterLocation(e.target.value)}
-                className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg min-w-[200px]"
+                className="border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white px-4 py-2.5 rounded-xl min-w-[220px] focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
               >
-                <option value="All">All Locations</option>
+                <option value="All">🏢 All Locations</option>
                 {CANTEEN_LOCATIONS.map(loc => (
                   <option key={loc} value={loc}>{loc}</option>
                 ))}
@@ -310,15 +341,14 @@ export const ReportsPage: React.FC = () => {
             </div>
           )}
 
-          {/* Water Station Period Filter */}
           {reportType === 'water' && (
             <>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm text-gray-600 dark:text-slate-400 font-medium">Period</label>
+              <div className="flex flex-col gap-1.5 group">
+                <label className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider group-focus-within:text-blue-500 transition-colors">Period</label>
                 <select
                   value={waterPeriod}
                   onChange={(e) => setWaterPeriod(e.target.value as any)}
-                  className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg"
+                  className="border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
                 >
                   <option value="daily">Daily</option>
                   <option value="monthly">Monthly</option>
@@ -326,32 +356,45 @@ export const ReportsPage: React.FC = () => {
                 </select>
               </div>
               {waterPeriod === 'daily' && (
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm text-gray-600 dark:text-slate-400 font-medium">Date</label>
+                <div className="flex flex-col gap-1.5 group">
+                  <label className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider group-focus-within:text-blue-500 transition-colors">Date</label>
                   <input type="date" value={date} onChange={e => setDate(e.target.value)}
-                    className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg" />
+                    className="border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm" />
                 </div>
               )}
               {(waterPeriod === 'monthly' || waterPeriod === 'yearly') && (
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm text-gray-600 dark:text-slate-400 font-medium">Year</label>
+                <div className="flex flex-col gap-1.5 group">
+                  <label className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider group-focus-within:text-blue-500 transition-colors">Year</label>
                   <input type="number" value={year} onChange={e => setYear(+e.target.value)}
-                    className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg w-28" />
+                    className="border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white px-4 py-2.5 rounded-xl w-28 focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm" />
                 </div>
               )}
               {waterPeriod === 'monthly' && (
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm text-gray-600 dark:text-slate-400 font-medium">Month</label>
+                <div className="flex flex-col gap-1.5 group">
+                  <label className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider group-focus-within:text-blue-500 transition-colors">Month</label>
                   <input type="number" min={1} max={12} value={month} onChange={e => setMonth(+e.target.value)}
-                    className="border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-4 py-2 rounded-lg w-24" />
+                    className="border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white px-4 py-2.5 rounded-xl w-24 focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm" />
                 </div>
               )}
             </>
           )}
 
-          <Button onClick={handleGenerateReport} isLoading={loading}>
-            Generate Report
-          </Button>
+          <div className="ml-auto">
+            <button
+              onClick={handleGenerateReport}
+              disabled={loading}
+              className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:scale-[1.02] active:scale-95'}`}
+            >
+              {loading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                  Generating...
+                </>
+              ) : (
+                <>✨ Generate Report</>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -364,26 +407,31 @@ export const ReportsPage: React.FC = () => {
             <p className="text-gray-600">Generated on {new Date().toLocaleString()}</p>
             <hr className="my-4" />
           </div>
-          <Card title="Sales Summary">
+          <div className="mt-8">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Sales Summary</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <p className="text-gray-700 text-sm font-medium mb-1">Total Orders</p>
-                <p className="text-3xl font-bold text-blue-600">{dailyData.total_orders || 0}</p>
+              <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+                <p className="text-blue-100 text-sm font-semibold uppercase tracking-wider mb-2">Total Orders</p>
+                <p className="text-4xl font-extrabold">{dailyData.total_orders || 0}</p>
               </div>
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <p className="text-gray-700 text-sm font-medium mb-1">Total Revenue</p>
-                <p className="text-3xl font-bold text-green-600">{formatCurrency(dailyData.total_revenue || 0)}</p>
+              <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+                <p className="text-emerald-100 text-sm font-semibold uppercase tracking-wider mb-2">Total Revenue</p>
+                <p className="text-4xl font-extrabold">{formatCurrency(dailyData.total_revenue || 0)}</p>
               </div>
-              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <p className="text-gray-700 text-sm font-medium mb-1">Total Unit Cost</p>
-                <p className="text-3xl font-bold text-purple-600">{formatCurrency(dailyData.total_unit_cost || 0)}</p>
+              <div className="relative overflow-hidden bg-gradient-to-br from-orange-500 to-red-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+                <p className="text-orange-100 text-sm font-semibold uppercase tracking-wider mb-2">Total Unit Cost</p>
+                <p className="text-4xl font-extrabold">{formatCurrency(dailyData.total_unit_cost || 0)}</p>
               </div>
-              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                <p className="text-gray-700 text-sm font-medium mb-1">Total Items Sold</p>
-                <p className="text-3xl font-bold text-yellow-600">{dailyData.total_items || 0}</p>
+              <div className="relative overflow-hidden bg-gradient-to-br from-purple-500 to-pink-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+                <p className="text-purple-100 text-sm font-semibold uppercase tracking-wider mb-2">Total Items Sold</p>
+                <p className="text-4xl font-extrabold">{dailyData.total_items || 0}</p>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
       )}
 
@@ -395,29 +443,33 @@ export const ReportsPage: React.FC = () => {
             <h2 className="text-xl font-semibold mb-2">{getReportTitle()}</h2>
             <hr className="my-4" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <Card>
-              <p className="text-gray-600 text-sm font-medium">Total Products</p>
-              <p className="text-2xl font-bold text-blue-600">{itemSales.length}</p>
-            </Card>
-            <Card>
-              <p className="text-gray-600 text-sm font-medium">Total Quantity Sold</p>
-              <p className="text-2xl font-bold text-purple-600">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-4">
+            <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+              <p className="text-blue-100 text-sm font-semibold uppercase tracking-wider mb-2">Total Products</p>
+              <p className="text-4xl font-extrabold">{itemSales.length}</p>
+            </div>
+            <div className="relative overflow-hidden bg-gradient-to-br from-purple-500 to-fuchsia-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+              <p className="text-purple-100 text-sm font-semibold uppercase tracking-wider mb-2">Total Qty Sold</p>
+              <p className="text-4xl font-extrabold">
                 {itemSales.reduce((sum, item) => sum + Number(item.total_quantity || 0), 0)}
               </p>
-            </Card>
-            <Card>
-              <p className="text-gray-600 text-sm font-medium">Total Revenue</p>
-              <p className="text-2xl font-bold text-green-600">
+            </div>
+            <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+              <p className="text-emerald-100 text-sm font-semibold uppercase tracking-wider mb-2">Total Revenue</p>
+              <p className="text-4xl font-extrabold">
                 {formatCurrency(itemSales.reduce((sum, item) => sum + Number(item.total_revenue || 0), 0))}
               </p>
-            </Card>
-            <Card>
-              <p className="text-gray-600 text-sm font-medium">Total Unit Cost</p>
-              <p className="text-2xl font-bold text-orange-600">
+            </div>
+            <div className="relative overflow-hidden bg-gradient-to-br from-orange-500 to-red-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+              <p className="text-orange-100 text-sm font-semibold uppercase tracking-wider mb-2">Total Unit Cost</p>
+              <p className="text-4xl font-extrabold">
                 {formatCurrency(itemSales.reduce((sum, item) => sum + Number(item.total_unit_cost || 0), 0))}
               </p>
-            </Card>
+            </div>
           </div>
           <Card title="Item Sales Report">
             <div className="flex flex-col border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden">
@@ -462,26 +514,30 @@ export const ReportsPage: React.FC = () => {
             <h2 className="text-xl font-semibold mb-2">{getReportTitle()}</h2>
             <hr className="my-4" />
           </div>
-          <Card title="Credit Sales Summary">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Total Credit Orders</p>
-                <p className="text-2xl font-bold text-blue-600">{creditSales.length}</p>
+          <div className="mt-8 mb-8">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Credit Sales Summary</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-blue-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+                <p className="text-indigo-100 text-sm font-semibold uppercase tracking-wider mb-2">Total Credit Orders</p>
+                <p className="text-4xl font-extrabold">{creditSales.length}</p>
               </div>
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Outstanding Credit</p>
-                <p className="text-2xl font-bold text-red-600">
+              <div className="relative overflow-hidden bg-gradient-to-br from-rose-500 to-red-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+                <p className="text-rose-100 text-sm font-semibold uppercase tracking-wider mb-2">Outstanding Credit</p>
+                <p className="text-4xl font-extrabold">
                   {formatCurrency(creditSales.filter((c) => c.status === 'Unpaid').reduce((sum, c) => sum + Number(c.total || 0), 0))}
                 </p>
               </div>
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Paid Credit Revenue</p>
-                <p className="text-2xl font-bold text-green-600">
+              <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-green-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+                <p className="text-emerald-100 text-sm font-semibold uppercase tracking-wider mb-2">Paid Credit Revenue</p>
+                <p className="text-4xl font-extrabold">
                   {formatCurrency(creditSales.filter((c) => c.status === 'Paid').reduce((sum, c) => sum + Number(c.total || 0), 0))}
                 </p>
               </div>
             </div>
-          </Card>
+          </div>
           <Card title="Credit Orders List">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
@@ -539,35 +595,38 @@ export const ReportsPage: React.FC = () => {
             <hr className="my-4" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <Card>
-              <p className="text-sm text-gray-600">Total Paid Bills</p>
-              <p className="text-2xl font-bold text-green-600">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 mt-4">
+            <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+              <p className="text-emerald-100 text-sm font-semibold uppercase tracking-wider mb-2">Total Paid Bills</p>
+              <p className="text-4xl font-extrabold">
                 {formatCurrency(
                   filteredCanteenBills
                     .filter(b => b.status === 'paid')
                     .reduce((s, b) => s + Number(b.amount), 0)
                 )}
               </p>
-            </Card>
+            </div>
 
-            <Card>
-              <p className="text-sm text-gray-600">Outstanding Bills</p>
-              <p className="text-2xl font-bold text-red-600">
+            <div className="relative overflow-hidden bg-gradient-to-br from-rose-500 to-red-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+              <p className="text-rose-100 text-sm font-semibold uppercase tracking-wider mb-2">Outstanding Bills</p>
+              <p className="text-4xl font-extrabold">
                 {formatCurrency(
                   filteredCanteenBills
                     .filter(b => b.status === 'unpaid')
                     .reduce((s, b) => s + Number(b.amount), 0)
                 )}
               </p>
-            </Card>
+            </div>
 
-            <Card>
-              <p className="text-sm text-gray-600">Occupied Stalls</p>
-              <p className="text-2xl font-bold text-blue-600">
+            <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-blue-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+              <p className="text-indigo-100 text-sm font-semibold uppercase tracking-wider mb-2">Occupied Stalls</p>
+              <p className="text-4xl font-extrabold">
                 {new Set(filteredCanteenBills.map(b => b.tenant?.stall?.id)).size}
               </p>
-            </Card>
+            </div>
           </div>
 
           <Card title={`Canteen Billing Details (${filterLocation})`}>
@@ -628,39 +687,42 @@ export const ReportsPage: React.FC = () => {
           </div>
 
           {/* Always-on summary stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
-              <p className="text-sm text-gray-600 dark:text-slate-400 font-medium mb-1">💰 Daily Sales</p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{formatCurrency(waterData.summary.daily_sales)}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8 mt-4">
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-md border-l-4 border-blue-500">
+              <p className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">💰 Daily Sales</p>
+              <p className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">{formatCurrency(waterData.summary.daily_sales)}</p>
             </div>
-            <div className="bg-cyan-50 dark:bg-cyan-900/20 p-4 rounded-lg border border-cyan-200 dark:border-cyan-700">
-              <p className="text-sm text-gray-600 dark:text-slate-400 font-medium mb-1">💧 Daily Gallons</p>
-              <p className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{Number(waterData.summary.daily_gallons).toFixed(2)} gal</p>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-md border-l-4 border-cyan-500">
+              <p className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">💧 Daily Gallons</p>
+              <p className="text-3xl font-extrabold text-cyan-600 dark:text-cyan-400">{Number(waterData.summary.daily_gallons).toFixed(2)}</p>
             </div>
-            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-700">
-              <p className="text-sm text-gray-600 dark:text-slate-400 font-medium mb-1">📅 Monthly Sales</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{formatCurrency(waterData.summary.monthly_sales)}</p>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-md border-l-4 border-green-500">
+              <p className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">📅 Monthly Sales</p>
+              <p className="text-3xl font-extrabold text-green-600 dark:text-green-400">{formatCurrency(waterData.summary.monthly_sales)}</p>
             </div>
-            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-700">
-              <p className="text-sm text-gray-600 dark:text-slate-400 font-medium mb-1">📆 Yearly Sales</p>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{formatCurrency(waterData.summary.yearly_sales)}</p>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-md border-l-4 border-purple-500">
+              <p className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">📆 Yearly Sales</p>
+              <p className="text-3xl font-extrabold text-purple-600 dark:text-purple-400">{formatCurrency(waterData.summary.yearly_sales)}</p>
             </div>
           </div>
 
           {/* Filtered period totals */}
           <Card title={`Water Station Report — ${waterData.label}`}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-blue-50 dark:bg-slate-700 p-4 rounded-lg">
-                <p className="text-sm text-gray-600 dark:text-slate-400 font-medium">Total Orders</p>
-                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{waterData.total_orders}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 mt-4">
+              <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+                <p className="text-blue-100 text-sm font-semibold uppercase tracking-wider mb-2">Total Orders</p>
+                <p className="text-4xl font-extrabold">{waterData.total_orders}</p>
               </div>
-              <div className="bg-green-50 dark:bg-slate-700 p-4 rounded-lg">
-                <p className="text-sm text-gray-600 dark:text-slate-400 font-medium">Total Sales</p>
-                <p className="text-3xl font-bold text-green-600 dark:text-green-400">{formatCurrency(waterData.total_sales)}</p>
+              <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+                <p className="text-emerald-100 text-sm font-semibold uppercase tracking-wider mb-2">Total Sales</p>
+                <p className="text-4xl font-extrabold">{formatCurrency(waterData.total_sales)}</p>
               </div>
-              <div className="bg-cyan-50 dark:bg-slate-700 p-4 rounded-lg">
-                <p className="text-sm text-gray-600 dark:text-slate-400 font-medium">Total Gallons Sold</p>
-                <p className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">{Number(waterData.total_gallons).toFixed(2)} gal</p>
+              <div className="relative overflow-hidden bg-gradient-to-br from-cyan-500 to-blue-600 p-6 rounded-2xl shadow-lg text-white transform transition-transform hover:-translate-y-1 hover:shadow-xl">
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
+                <p className="text-cyan-100 text-sm font-semibold uppercase tracking-wider mb-2">Total Gallons Sold</p>
+                <p className="text-4xl font-extrabold">{Number(waterData.total_gallons).toFixed(2)} gal</p>
               </div>
             </div>
 

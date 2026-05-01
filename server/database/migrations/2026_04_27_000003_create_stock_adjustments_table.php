@@ -12,9 +12,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('stock_room_product_id')->constrained('stock_room_products')->onDelete('cascade');
             $table->enum('type', ['add', 'subtract', 'set']);
-            $table->integer('quantity');           // amount adjusted
-            $table->integer('quantity_before');    // snapshot before
-            $table->integer('quantity_after');     // snapshot after
+            $table->integer('quantity');          
+            $table->integer('quantity_before');  
+            $table->integer('quantity_after');     
             $table->string('adjusted_by')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();

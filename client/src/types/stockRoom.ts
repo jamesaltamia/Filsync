@@ -1,4 +1,4 @@
-import { Category } from './product';
+import type { Category } from './product';
 
 export type StockStatus = 'available' | 'reserved' | 'damaged' | 'hold';
 export type ComputedStatus = 'available' | 'low_stock' | 'out_of_stock' | 'reserved' | 'damaged' | 'hold';

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\StockRoomProduct;
 use App\Models\StockTransfer;
+use App\Models\StockAdjustment;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -150,18 +151,36 @@ class StockRoomController extends Controller
     {
         $product = StockRoomProduct::findOrFail($id);
         $request->validate([
-            'type'     => 'required|in:add,subtract,set',
-            'quantity' => 'required|integer|min:0',
-            'notes'    => 'nullable|string',
+            'type'        => 'required|in:add,subtract,set',
+            'quantity'    => 'required|integer|min:0',
+            'adjusted_by' => 'nullable|string|max:255',
+            'notes'       => 'nullable|string',
         ]);
 
         $qty = (int) $request->quantity;
-        if ($request->type === 'add')      $product->quantity += $qty;
-        elseif ($request->type === 'subtract') $product->quantity = max(0, $product->quantity - $qty);
-        else                               $product->quantity = $qty;
+        $qtyBefore = $product->quantity;
 
+        if ($request->type === 'add') {
+            $product->quantity += $qty;
+        } elseif ($request->type === 'subtract') {
+            $product->quantity = max(0, $product->quantity - $qty);
+        } else {
+            $product->quantity = $qty;
+        }
+
+        $qtyAfter = $product->quantity;
         $product->save();
         $product->computed_status = $product->computed_status;
+
+        StockAdjustment::create([
+            'stock_room_product_id' => $product->id,
+            'type'                  => $request->type,
+            'quantity'              => $qty,
+            'quantity_before'       => $qtyBefore,
+            'quantity_after'        => $qtyAfter,
+            'adjusted_by'           => $request->adjusted_by,
+            'notes'                 => $request->notes,
+        ]);
 
         return response()->json($product->load('category'));
     }
@@ -236,6 +255,18 @@ class StockRoomController extends Controller
     {
         $history = StockTransfer::with(['inventoryProduct'])
             ->where('stock_room_product_id', $id)
+            ->latest()
+            ->get();
+
+        return response()->json($history);
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  ADJUSTMENT HISTORY                                                  */
+    /* ------------------------------------------------------------------ */
+    public function adjustHistory($id)
+    {
+        $history = StockAdjustment::where('stock_room_product_id', $id)
             ->latest()
             ->get();
 

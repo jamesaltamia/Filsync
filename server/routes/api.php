@@ -98,6 +98,7 @@ Route::get('/reports/water-sales', [ReportController::class, 'waterSales']);
         Route::post('/{id}/status', [\App\Http\Controllers\StockRoomController::class, 'updateStatus']);
         Route::post('/{id}/transfer', [\App\Http\Controllers\StockRoomController::class, 'transfer']);
         Route::get('/{id}/transfers', [\App\Http\Controllers\StockRoomController::class, 'transferHistory']);
+        Route::get('/{id}/adjustments', [\App\Http\Controllers\StockRoomController::class, 'adjustHistory']);
     });
 
     // Settings

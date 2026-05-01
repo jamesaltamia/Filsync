@@ -34,8 +34,8 @@ export const stockRoomService = {
     return res.data;
   },
 
-  adjust: async (id: number, type: 'add' | 'subtract' | 'set', quantity: number, notes?: string) => {
-    const res = await api.post(`/stock-room/${id}/adjust`, { type, quantity, notes });
+  adjust: async (id: number, type: 'add' | 'subtract' | 'set', quantity: number, adjusted_by?: string, notes?: string) => {
+    const res = await api.post(`/stock-room/${id}/adjust`, { type, quantity, adjusted_by, notes });
     return res.data as StockRoomProduct;
   },
 
@@ -56,6 +56,11 @@ export const stockRoomService = {
 
   getTransferHistory: async (id: number): Promise<StockTransfer[]> => {
     const res = await api.get(`/stock-room/${id}/transfers`);
+    return res.data;
+  },
+
+  getAdjustHistory: async (id: number): Promise<any[]> => {
+    const res = await api.get(`/stock-room/${id}/adjustments`);
     return res.data;
   },
 };

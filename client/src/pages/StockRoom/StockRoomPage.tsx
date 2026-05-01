@@ -46,10 +46,12 @@ export const StockRoomPage: React.FC = () => {
   const [showHistory, setShowHistory]   = useState(false);
   const [isEdit, setIsEdit]             = useState(false);
   const [selected, setSelected]         = useState<StockRoomProduct | null>(null);
-  const [history, setHistory]           = useState<any[]>([]);
+  const [transferHistory, setTransferHistory]   = useState<any[]>([]);
+  const [adjustHistory, setAdjustHistory]       = useState<any[]>([]);
+  const [historyTab, setHistoryTab]             = useState<'transfer'|'adjust'>('transfer');
 
   const [form, setForm]                 = useState({ ...emptyForm });
-  const [adjustForm, setAdjustForm]     = useState({ type:'add', quantity:'', notes:'' });
+  const [adjustForm, setAdjustForm]     = useState({ type:'add', quantity:'', adjusted_by:'', notes:'' });
   const [transferForm, setTransferForm] = useState({ quantity:'', inventory_product_id:'', transferred_by:'', notes:'' });
 
   const fetchAll = useCallback(async () => {
@@ -102,7 +104,7 @@ export const StockRoomPage: React.FC = () => {
     if (!selected) return;
     setLoading(true);
     try {
-      await stockRoomService.adjust(selected.id, adjustForm.type as any, +adjustForm.quantity, adjustForm.notes);
+      await stockRoomService.adjust(selected.id, adjustForm.type as any, +adjustForm.quantity, adjustForm.adjusted_by, adjustForm.notes);
       setShowAdjust(false); fetchAll();
     } catch (e:any) { alert(e.response?.data?.message || 'Error adjusting'); }
     finally { setLoading(false); }
@@ -125,8 +127,14 @@ export const StockRoomPage: React.FC = () => {
 
   const openHistory = async (p: StockRoomProduct) => {
     setSelected(p);
-    const h = await stockRoomService.getTransferHistory(p.id);
-    setHistory(h); setShowHistory(true);
+    const [t, a] = await Promise.all([
+      stockRoomService.getTransferHistory(p.id),
+      stockRoomService.getAdjustHistory(p.id)
+    ]);
+    setTransferHistory(t);
+    setAdjustHistory(a);
+    setHistoryTab('transfer');
+    setShowHistory(true);
   };
 
   const handleStatusChange = async (p: StockRoomProduct, status: string) => {
@@ -229,7 +237,7 @@ export const StockRoomPage: React.FC = () => {
                     <div className="flex flex-wrap gap-1">
                       <button onClick={() => openEdit(p)}
                         className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 font-medium">Edit</button>
-                      <button onClick={() => { setSelected(p); setAdjustForm({ type:'add', quantity:'', notes:'' }); setShowAdjust(true); }}
+                      <button onClick={() => { setSelected(p); setAdjustForm({ type:'add', quantity:'', adjusted_by:'', notes:'' }); setShowAdjust(true); }}
                         className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 font-medium">Adjust</button>
                       <button onClick={() => { setSelected(p); setTransferForm({ quantity:'', inventory_product_id:'', transferred_by:'', notes:'' }); setShowTransfer(true); }}
                         className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 font-medium">Transfer</button>
@@ -318,6 +326,7 @@ export const StockRoomPage: React.FC = () => {
             </select>
           </div>
           <Input label="Quantity" type="number" value={adjustForm.quantity} onChange={e => setAdjustForm({ ...adjustForm, quantity: e.target.value })} autoFocus />
+          <Input label="Adjusted By (Name)" value={adjustForm.adjusted_by} onChange={e => setAdjustForm({ ...adjustForm, adjusted_by: e.target.value })} placeholder="e.g. Juan Dela Cruz" />
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Notes (optional)</label>
             <textarea value={adjustForm.notes} onChange={e => setAdjustForm({ ...adjustForm, notes: e.target.value })} rows={2}
@@ -364,33 +373,80 @@ export const StockRoomPage: React.FC = () => {
       </Modal>
 
       {/* HISTORY MODAL */}
-      <Modal isOpen={showHistory} onClose={() => setShowHistory(false)} title={`Transfer History — ${selected?.name}`} size="lg">
-        {history.length === 0 ? (
-          <p className="text-center py-8 text-gray-400">No transfer history for this item.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
-              <thead className="bg-gray-50 dark:bg-slate-900/50">
-                <tr>
-                  {['Date', 'Qty Transferred', 'To Inventory Product', 'By', 'Notes'].map(h => (
-                    <th key={h} className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
-                {history.map((t: any) => (
-                  <tr key={t.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50">
-                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-slate-300">{new Date(t.created_at).toLocaleDateString()}</td>
-                    <td className="px-4 py-3 text-sm font-bold text-blue-600 dark:text-blue-400">{t.quantity}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-slate-300">{t.inventory_product?.name || '—'}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-slate-300">{t.transferred_by || '—'}</td>
-                    <td className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400">{t.notes || '—'}</td>
+      <Modal isOpen={showHistory} onClose={() => setShowHistory(false)} title={`History — ${selected?.name}`} size="lg">
+        <div className="flex border-b border-gray-200 dark:border-slate-700 mb-4">
+          <button
+            className={`px-4 py-2 font-medium text-sm transition-colors ${historyTab === 'transfer' ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
+            onClick={() => setHistoryTab('transfer')}
+          >
+            Transfer History
+          </button>
+          <button
+            className={`px-4 py-2 font-medium text-sm transition-colors ${historyTab === 'adjust' ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
+            onClick={() => setHistoryTab('adjust')}
+          >
+            Adjustment History
+          </button>
+        </div>
+
+        {historyTab === 'transfer' && (
+          transferHistory.length === 0 ? (
+            <p className="text-center py-8 text-gray-400">No transfer history for this item.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                <thead className="bg-gray-50 dark:bg-slate-900/50">
+                  <tr>
+                    {['Date', 'Qty Transferred', 'To Inventory Product', 'By', 'Notes'].map(h => (
+                      <th key={h} className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+                  {transferHistory.map((t: any) => (
+                    <tr key={t.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50">
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-slate-300">{new Date(t.created_at).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 text-sm font-bold text-blue-600 dark:text-blue-400">{t.quantity}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-slate-300">{t.inventory_product?.name || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-slate-300">{t.transferred_by || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400">{t.notes || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
         )}
+
+        {historyTab === 'adjust' && (
+          adjustHistory.length === 0 ? (
+            <p className="text-center py-8 text-gray-400">No adjustment history for this item.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                <thead className="bg-gray-50 dark:bg-slate-900/50">
+                  <tr>
+                    {['Date', 'Type', 'Quantity', 'Adjusted By', 'Notes'].map(h => (
+                      <th key={h} className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+                  {adjustHistory.map((a: any) => (
+                    <tr key={a.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50">
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-slate-300">{new Date(a.created_at).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-slate-200 capitalize">{a.type}</td>
+                      <td className="px-4 py-3 text-sm font-bold text-purple-600 dark:text-purple-400">{a.quantity}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-slate-300">{a.adjusted_by || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400">{a.notes || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        )}
+
         <div className="flex justify-end pt-4 border-t dark:border-slate-700 mt-4">
           <Button variant="outline" onClick={() => setShowHistory(false)}>Close</Button>
         </div>
