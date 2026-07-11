@@ -1,6 +1,5 @@
 import api from './api';
 import type { Product } from '../types/product';
-import type { Order } from '../types/order';
 
 export const salesService = {
   getProducts: async (params?: {

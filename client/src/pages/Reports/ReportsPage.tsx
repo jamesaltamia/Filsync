@@ -8,7 +8,6 @@ import type { Bill } from '../../types/canteen';
 import type { Category } from '../../types/product';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { Card } from '../../components/Card';
-import { Button } from '../../components/Button';
 
 // CONSTANTS
 const CANTEEN_LOCATIONS = ['Main Canteen', 'High School Canteen'];
@@ -260,8 +259,8 @@ export const ReportsPage: React.FC = () => {
               key={t.id}
               onClick={() => setReportType(t.id as any)}
               className={`flex-1 min-w-[130px] flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ease-out transform ${reportType === t.id
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-[1.02]'
-                  : 'text-gray-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm hover:text-gray-900 dark:hover:text-white'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-[1.02]'
+                : 'text-gray-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm hover:text-gray-900 dark:hover:text-white'
                 }`}
             >
               <span className={reportType === t.id ? 'opacity-100' : 'opacity-70'}>{t.icon}</span>

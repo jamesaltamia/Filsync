@@ -1,5 +1,4 @@
 import api from './api';
-import type { Order } from '../types/order';
 
 export const orderService = {
   getOrders: async (params?: {
